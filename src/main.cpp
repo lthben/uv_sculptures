@@ -11,6 +11,13 @@
 */
 
 #include <Arduino.h>
+#include <FastLED.h>
+#include <Audio.h>
+#include <Wire.h>
+#include <SPI.h>
+#include <SD.h>
+#include <SerialFlash.h>
+#include <Bounce.h>
 
 //-------------------- USER DEFINED SETTINGS --------------------//
 
@@ -22,17 +29,23 @@
 //Sip Garden. Sep 26, 2019. 1.35pm -> 8.03
 //Sip Garden. Oct 01, 2019. 10.41am -> 0.98
 //Sip Garden. Oct 04, 2019. 1.20pm -> 7.61
-const float ann_readings[6] = { 0.15, 6.27, 0.42, 8.03, 0.98, 7.61 }; //6 buttons for 6 data points
+const float ann_readings[6] = {0.15, 6.27, 0.42, 8.03, 0.98, 7.61}; //6 buttons for 6 data points
 
 const int BAND1_1 = 7, BAND1_2 = 4, BAND1_3 = 3, BAND1_4 = 2, BAND1_5 = 2, BAND1_6 = 2; //num of pixels per band
 const int BAND2_1 = 4, BAND2_2 = 3, BAND2_3 = 3, BAND2_4 = 2, BAND2_5 = 2, BAND2_6 = 2;
 
 //follow shape of graph. 20 data points
-const float soh_readings[20] = { 0.04, 1.6, 0.03 , 3.9, 0.78, 3.8, 0.05, 1.45, 0.04, 7.04, 0.06, 0.57, 0.94, 0.03, 0.75, 0.43, 0.93, 0.04, 0.53, 0.11 };
-const float suang_readings[20] = { 0.04, 0.59, 0.13, 0, 1.6, 0.05, 3.8, 0.09, 0.03, 0.43, 0.02, 0.06, 0.57, 0.94, 0.65, 0.04, 0.75, 0.44, 0.82, 0.04 };
+const float soh_readings[20] = {0.04, 1.6, 0.03, 3.9, 0.78, 3.8, 0.05, 1.45, 0.04, 7.04, 0.06, 0.57, 0.94, 0.03, 0.75, 0.43, 0.93, 0.04, 0.53, 0.11};
+const float suang_readings[20] = {0.04, 0.59, 0.13, 0, 1.6, 0.05, 3.8, 0.09, 0.03, 0.43, 0.02, 0.06, 0.57, 0.94, 0.65, 0.04, 0.75, 0.44, 0.82, 0.04};
+
+const int BAND_DELAY = 500;    //ms delay between each band lightup
+#define UPDATES_PER_SECOND 100 //speed of light animation
+CHSV cyellow(64, 255, 255);
+CHSV cpink(224, 255, 255);
+
+//-------------------- Audio --------------------//
 
 //-------------------- Buttons --------------------//
-#include <Bounce.h>
 
 Bounce button0 = Bounce(0, 15); // 15 = 15 ms debounce time
 Bounce button1 = Bounce(1, 15);
@@ -47,7 +60,6 @@ const int slider1 = 23;
 bool isButtonPressed;
 
 //-------------------- Light --------------------//
-#include <FastLED.h>
 
 #define LED_PIN 6
 
@@ -55,40 +67,205 @@ bool isButtonPressed;
 #define COLOR_ORDER GRB //Yes! GRB!
 
 #if defined(__SCULPTURE1__)
-  const int NUM_LEDS = BAND1_1 + BAND1_2 + BAND1_3 + BAND1_4 + BAND1_5 + BAND1_6;
+const int NUM_LEDS = BAND1_1 + BAND1_2 + BAND1_3 + BAND1_4 + BAND1_5 + BAND1_6;
+const int BAND1 = BAND1_1, BAND2 = BAND1_2, BAND3 = BAND1_3, BAND4 = BAND1_4, BAND5 = BAND1_5, BAND6 = BAND1_6;
+const int BAND1L = BAND1_1, BAND2L = BAND1_1 + BAND1_2, BAND3L = BAND1_1 + BAND1_2 + BAND1_3, BAND4L = BAND1_1 + BAND1_2 + BAND1_3 + BAND1_4, BAND5L = BAND1_1 + BAND1_2 + BAND1_3 + BAND1_4 + BAND1_5, BAND6L = BAND1_1 + BAND1_2 + BAND1_3 + BAND1_4 + BAND1_5 + BAND1_6;
+const int SCULPTURE_ID = 1;
 #elif defined(__SCULPTURE2__)
-  const int NUM_LEDS = BAND2_1 + BAND2_2 + BAND2_3 + BAND2_4 + BAND2_5 + BAND2_6;
-#else 
-  #error "invalid sculpture ID"
+const int NUM_LEDS = BAND2_1 + BAND2_2 + BAND2_3 + BAND2_4 + BAND2_5 + BAND2_6;
+const int BAND1 = BAND2_1, BAND2 = BAND2_2, BAND3 = BAND2_3, BAND4 = BAND2_4, BAND5 = BAND2_5, BAND6 = BAND2_6;
+const int BAND1L = BAND2_1, BAND2L = BAND2_1 + BAND2_2, BAND3L = BAND2_1 + BAND2_2 + BAND2_3, BAND4L = BAND2_1 + BAND2_2 + BAND2_3 + BAND2_4, BAND5L = BAND2_1 + BAND2_2 + BAND2_3 + BAND2_4 + BAND2_5, BAND6L = BAND2_1 + BAND2_2 + BAND2_3 + BAND2_4 + BAND2_5 + BAND2_6;
+const int SCULPTURE_ID = 2;
+#else
+#error "invalid sculpture ID"
 #endif
 
 CRGB leds[NUM_LEDS];
+int brightness1, brightness2, brightness3, brightness4, brightness5, brightness6;
+bool isMaxBrightness = false; //to track idle animation direction
+//isMaxBrightness1, isMaxBrightness2, isMaxBrightness3, isMaxBrightness4, isMaxBrightness5, isMaxBrightness6;
+elapsedMillis bandms;
 
-int brightness = 255;
+//-------------------- Function Declarations --------------------//
 
-#define UPDATES_PER_SECOND 100
+void read_pushbuttons();
+int get_brightness(int _brightness);
 
 //-------------------- Setup --------------------//
 
-void setup() {
-  
+void setup()
+{
   pinMode(slider0, INPUT);
   pinMode(slider1, INPUT);
-  
+
   Serial.begin(9600);
 
   delay(2000); //power up safety delay
 
   FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS);
-  FastLED.setBrightness(brightness);
+  FastLED.setBrightness(255);
 
   delay(10);
+  bandms = 0;
 }
 
 //-------------------- Loop --------------------//
 
-void loop() {
-  
+void loop()
+{
+  if (!isMaxBrightness)
+  {
+    for (int i = 0; i < BAND1L; i++)
+    {
+      int brightlevel = get_brightness(brightness1);
+      cyellow.val = brightlevel;
+      brightness1 = brightlevel;
+      leds[i] = cyellow;
+    }
+  }
+  else
+  {
+    for (int i = BAND5L; i < BAND6L; i++)
+    {
+      int brightlevel = get_brightness(brightness5);
+      cyellow.val = brightlevel;
+      brightness5 = brightlevel;
+      leds[i] = cyellow;
+    }
+  }
+
+  if (bandms > BAND_DELAY)
+  {
+    if (!isMaxBrightness)
+    {
+      for (int i = BAND1L; i < BAND2L; i++)
+      {
+        int brightlevel = get_brightness(brightness2);
+        cyellow.val = brightlevel;
+        brightness2 = brightlevel;
+        leds[i] = cyellow;
+      }
+    }
+    else
+    {
+      for (int i = BAND4L; i < BAND5L; i++)
+      {
+        int brightlevel = get_brightness(brightness4);
+        cyellow.val = brightlevel;
+        brightness4 = brightlevel;
+        leds[i] = cyellow;
+      }
+    }
+  }
+
+  if (bandms > BAND_DELAY * 2)
+  {
+    if (!isMaxBrightness)
+    {
+      for (int i = BAND2L; i < BAND3L; i++)
+      {
+        int brightlevel = get_brightness(brightness3);
+        cyellow.val = brightlevel;
+        brightness3 = brightlevel;
+        leds[i] = cyellow;
+      }
+    }
+    else
+    {
+      for (int i = BAND3L; i < BAND4L; i++)
+      {
+        int brightlevel = get_brightness(brightness3);
+        cyellow.val = brightlevel;
+        brightness3 = brightlevel;
+        leds[i] = cyellow;
+      }
+    }
+  }
+
+  if (bandms > BAND_DELAY * 3)
+  {
+    if (!isMaxBrightness)
+    {
+      for (int i = BAND3L; i < BAND4L; i++)
+      {
+        int brightlevel = get_brightness(brightness3);
+        cyellow.val = brightlevel;
+        brightness3 = brightlevel;
+        leds[i] = cyellow;
+      }
+    }
+    else
+    {
+      for (int i = BAND2L; i < BAND3L; i++)
+      {
+        int brightlevel = get_brightness(brightness3);
+        cyellow.val = brightlevel;
+        brightness3 = brightlevel;
+        leds[i] = cyellow;
+      }
+    }
+  }
+
+  if (bandms > BAND_DELAY * 4)
+  {
+    if (!isMaxBrightness)
+    {
+      for (int i = BAND4L; i < BAND5L; i++)
+      {
+        int brightlevel = get_brightness(brightness4);
+        cyellow.val = brightlevel;
+        brightness4 = brightlevel;
+        leds[i] = cyellow;
+      }
+    }
+    else
+    {
+      for (int i = BAND1L; i < BAND2L; i++)
+      {
+        int brightlevel = get_brightness(brightness2);
+        cyellow.val = brightlevel;
+        brightness2 = brightlevel;
+        leds[i] = cyellow;
+      }
+    }
+  }
+
+  if (bandms > BAND_DELAY * 5)
+  {
+    if (!isMaxBrightness)
+    {
+      for (int i = BAND5L; i < BAND6L; i++)
+      {
+        int brightlevel = get_brightness(brightness5);
+        cyellow.val = brightlevel;
+        brightness5 = brightlevel;
+        leds[i] = cyellow;
+        if (brightlevel == 255)
+        {
+          isMaxBrightness = true;
+          bandms = 0;
+        }
+      }
+    }
+    else
+    {
+      for (int i = 0; i < BAND1L; i++)
+      {
+        int brightlevel = get_brightness(brightness1);
+        cyellow.val = brightlevel;
+        brightness1 = brightlevel;
+        leds[i] = cyellow;
+        if (brightlevel == 0)
+        {
+          isMaxBrightness = false;
+          bandms = 0;
+        }
+      }
+    }
+  }
+
+  FastLED.show();
+  FastLED.delay(1000 / UPDATES_PER_SECOND);
 }
 
 //-------------------- Support functions --------------------//
@@ -136,5 +313,23 @@ void read_pushbuttons()
   {
     isButtonPressed = true;
     Serial.println("button5 pressed");
+  }
+}
+
+int get_brightness(int _brightness)
+{
+  if (!isMaxBrightness)
+  {
+    _brightness++;
+    if (_brightness > 255)
+      _brightness = 255;
+    return _brightness;
+  }
+  else //reached max brightness
+  {
+    _brightness--;
+    if (_brightness < 0)
+      _brightness = 0;
+    return _brightness;
   }
 }
