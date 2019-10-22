@@ -1,4 +1,4 @@
-void read_pushbuttons()
+void read_console()
 {
   button0.update();
   button1.update();
@@ -9,37 +9,43 @@ void read_pushbuttons()
 
   if (button0.fallingEdge())
   {
-    isButtonPressed = true; buttonNum = 0;
+    isButtonPressed = true;
+    buttonNum = 0;
     Serial.println("button0 pressed");
   }
 
   if (button1.fallingEdge())
   {
-    isButtonPressed = true; buttonNum = 1;
+    isButtonPressed = true;
+    buttonNum = 1;
     Serial.println("button1 pressed");
   }
 
   if (button2.fallingEdge())
   {
-    isButtonPressed = true; buttonNum = 2;
+    isButtonPressed = true;
+    buttonNum = 2;
     Serial.println("button2 pressed");
   }
 
   if (button3.fallingEdge())
   {
-    isButtonPressed = true; buttonNum = 3;
+    isButtonPressed = true;
+    buttonNum = 3;
     Serial.println("button3 pressed");
   }
 
   if (button4.fallingEdge())
   {
-    isButtonPressed = true; buttonNum = 4;
+    isButtonPressed = true;
+    buttonNum = 4;
     Serial.println("button4 pressed");
   }
 
   if (button5.fallingEdge())
   {
-    isButtonPressed = true; buttonNum = 5;
+    isButtonPressed = true;
+    buttonNum = 5;
     Serial.println("button5 pressed");
   }
 }
@@ -212,6 +218,57 @@ void fade_animation()
           bandms = 0;
         }
       }
+    }
+  }
+}
+
+void process_ann_readings()
+{
+  if (activeLedState == 0) //dim the lights
+  {
+    for (int i = 0; i < NUM_LEDS; i++)
+    {
+      leds[i].fadeToBlackBy(8); //dim by (x/256)% till eventually to black
+    }
+    if (leds[0].getAverageLight() == 0)
+    {
+      activeLedState = 1; //go to next state
+      brightness1 = brightness2 = brightness3 = brightness4 = brightness5 = brightness6 = 0;
+      isMaxBrightness = false;
+      bandms = 0;
+    }
+  }
+  else if (activeLedState == 1) //finished dimming, show the reading
+  {
+    //show reading
+    fade_animation();
+    //check whether max bright reached
+    if (isMaxBrightness == true)
+    {
+      activeLedState = 2;
+      bandms = 0;
+    }
+  }
+  else if (activeLedState == 2) //has reached max brightness, hold for a few sec
+  {
+    if (bandms > HOLD_DURATION)
+    {
+      activeLedState = 3;
+      bandms = 0;
+    }
+  }
+  else if (activeLedState == 3) //has held for a few sec
+  {
+    //dim
+    fade_animation();
+    //check whether dim finished
+    if (isMaxBrightness == false)
+    {
+      isIdleMode = true;
+      maxBrightLvl = 255;
+      activeLedState = 0;
+      bandms = 0;
+      band_delay = BAND_DELAY;
     }
   }
 }

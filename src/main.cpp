@@ -21,7 +21,7 @@
 
 //-------------------- USER DEFINED SETTINGS --------------------//
 
-#define __SCULPTURE1__ //SCULPTURE1 is Ann, SCULPTURE2 is Soh and Suang Suang
+#define __SCULPTURE2__ //SCULPTURE1 is Ann, SCULPTURE2 is Soh and Suang Suang
 
 //Deck near Sunrise Bridge. Sep 18, 2019. 6.45pm -> 0.15
 //Sip Garden. Sep 24, 2019. 10.30am -> 6.27
@@ -35,7 +35,7 @@ const int BAND1_1 = 7, BAND1_2 = 4, BAND1_3 = 3, BAND1_4 = 2, BAND1_5 = 2, BAND1
 const int BAND2_1 = 4, BAND2_2 = 3, BAND2_3 = 3, BAND2_4 = 2, BAND2_5 = 2, BAND2_6 = 2; //Sculpture 2: num of pixels per band
 
 //follow shape of graph. 20 data points
-const float soh_readings[20] = {0.04, 1.6, 0.03, 3.9, 0.78, 3.8, 0.05, 1.45, 0.04, 7.04, 0.06, 0.57, 0.94, 0.03, 0.75, 0.43, 0.93, 0.04, 0.53, 0.11};
+const float soh_readings[20] = {0.04, 1.6, 0.03, 3.9, 0.78, 3.8, 0.05, 1.45, 0.04, 7.00, 0.06, 0.57, 0.94, 0.03, 0.75, 0.43, 0.93, 0.04, 0.53, 0.11};
 const float suang_readings[20] = {0.04, 0.59, 0.13, 0, 1.6, 0.05, 3.8, 0.09, 0.03, 0.43, 0.02, 0.06, 0.57, 0.94, 0.65, 0.04, 0.75, 0.44, 0.82, 0.04};
 
 const int BAND_DELAY = 500;    //ms delay between each band lightup
@@ -87,11 +87,15 @@ CRGB leds[NUM_LEDS];
 int brightness1, brightness2, brightness3, brightness4, brightness5, brightness6; //band 1 to 6 brightness
 int maxBrightLvl = 255;                                                           //max brightness
 bool isIdleMode = true;
-int activeLedState = 0;            //0 - idle mode, 1 - idle animation has finished dimming, 2 - has reached brightness according to reading, 3 - has held for a few sec
+int activeLedState = 0;            //SCULPTURE 1 : 0 - idle mode, 1 - idle animation has finished dimming, 2 - show brightness according to reading, 3 - has held for a few sec, fade to black and idle
+                                   //SCULPTURE 2: 0 - idle mode, 1 - idle animation has finished dimming, show reading animations, 2 - has completed animations, fade to black and idle
 unsigned int HOLD_DURATION = 3000; //in msec, how long to hold the active brightness level
 bool isMaxBrightness = false;      //to track idle animation direction
 elapsedMillis bandms;
 unsigned int band_delay = BAND_DELAY;
+int readings[20];              //light values for sculpture 2
+unsigned int readingsCounter;  //keeps track of indexing the readings array
+unsigned int prevVal, currVal; //for comparing prev and current values for dimming and brightening
 
 #include "myfunctions.h"
 
@@ -122,17 +126,36 @@ void setup()
 
 void loop()
 {
-
-  read_pushbuttons();
+  read_console();
 
   if (isButtonPressed == true)
   {
     isButtonPressed = false; //listen again for button presses
     isIdleMode = false;
 
-    float reading = ann_readings[buttonNum];
-    maxBrightLvl = int(map(reading, 0.0, 10.0, 31.0, 255.0));
-    band_delay = BAND_DELAY /4 ;//make it faster to differentiate from idle mode
+    if (SCULPTURE_ID == 1)
+    {
+      float reading = ann_readings[buttonNum]; //get the reading according to button
+      maxBrightLvl = int(map(reading, 0.0, 10.0, 31.0, 255.0));
+      band_delay = BAND_DELAY / 4; //make it faster to differentiate from idle mode
+    }
+    else if (SCULPTURE_ID == 2) //get the readings once
+    {
+      if (buttonNum == 0)
+      {
+        for (int i = 0; i < 20; i++)
+        {
+          readings[i] = int(map(soh_readings[i], 0.0, 7.0, 31.0, 255.0));
+        }
+      }
+      else if (buttonNum == 1)
+      {
+        for (int i = 0; i < 20; i++)
+        {
+          readings[i] = int(map(suang_readings[i], 0.0, 7.0, 31.0, 255.0));
+        }
+      }
+    }
   }
 
   if (isIdleMode == true)
@@ -141,55 +164,90 @@ void loop()
   }
   else //show the reading according to bright level
   {
-    if (activeLedState == 0) //dim the lights
+    if (SCULPTURE_ID == 1)
     {
-      for (int i = 0; i < NUM_LEDS; i++)
-      {
-        leds[i].fadeToBlackBy(8); //dim by (x/256)% till eventually to black
-      }
-      if (leds[0].getAverageLight() == 0)
-      {
-        activeLedState = 1; //go to next state
-        brightness1 = brightness2 = brightness3 = brightness4 = brightness5 = brightness6 = 0;
-        isMaxBrightness = false;
-        bandms = 0;
-      }
+      process_ann_readings();
     }
-    else if (activeLedState == 1) //finished dimming, show the reading
+    else if (SCULPTURE_ID == 2)
     {
-      //show reading
-      fade_animation();
-      //check whether max bright reached
-      if (isMaxBrightness == true)
+      //process soh and suang readings
+
+      if (activeLedState == 0) //dim the lights
       {
-        activeLedState = 2;
-        bandms = 0;
+        for (int i = 0; i < NUM_LEDS; i++)
+        {
+          leds[i].fadeToBlackBy(8); //dim by (x/256)% till eventually to black
+        }
+        if (leds[0].getAverageLight() == 0)
+        {
+          activeLedState = 1; //go to next state
+          brightness1 = brightness2 = brightness3 = brightness4 = brightness5 = brightness6 = 0;
+          isMaxBrightness = false;
+          bandms = 0;
+          readingsCounter = 0;
+        }
       }
-    }
-    else if (activeLedState == 2) //has reached max brightness, hold for a few sec
-    {
-      if (bandms > HOLD_DURATION)
+      else if (activeLedState == 1) //finished dimming, show the reading
       {
-        activeLedState = 3; 
-        bandms = 0;
+        if (bandms > readingsCounter * BAND_DELAY)
+        {
+          // myColor.val = readings[readingsCounter];
+          // for (int i = 0; i < NUM_LEDS; i++)
+          // {
+          //   leds[i] = myColor;
+          // }
+          // readingsCounter++;
+
+          currVal = readings[readingsCounter];
+
+          if (currVal > prevVal)
+          {
+            if (myColor.val < currVal)
+            {
+              myColor.val++; //brighten
+            }
+            for (int i = 0; i < NUM_LEDS; i++)
+            {
+              leds[i] = myColor;
+            }
+          }
+          else
+          {
+            if (myColor.val > currVal)
+            {
+              myColor.val--; //dim
+            }
+            for (int i = 0; i < NUM_LEDS; i++)
+            {
+              leds[i] = myColor;
+            }
+          }
+
+          currVal = prevVal;
+          readingsCounter++;
+
+          if (readingsCounter == 20)
+          {
+            activeLedState = 2; //go to next state
+            bandms = 0;
+          }
+        }
       }
-    }
-    else if (activeLedState == 3) //has held for a few sec
-    {
-      //dim
-      fade_animation();
-      //check whether dim finished
-      if (isMaxBrightness == false)
+      else if (activeLedState == 2)
       {
-        isIdleMode = true;
-        maxBrightLvl = 255;
-        activeLedState = 0;
-        bandms = 0;
-        band_delay = BAND_DELAY;
+        for (int i = 0; i < NUM_LEDS; i++)
+        {
+          leds[i].fadeToBlackBy(8); //dim by (x/256)% till eventually to black
+        }
+        if (leds[0].getAverageLight() == 0)
+        {
+          activeLedState = 0; //go to next state
+          bandms = 0;
+          isIdleMode = true;
+        }
       }
     }
   }
-
   FastLED.show();
   FastLED.delay(1000 / UPDATES_PER_SECOND);
 }
