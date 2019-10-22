@@ -58,6 +58,7 @@ const int slider0 = 22; //slider pin
 const int slider1 = 23;
 
 bool isButtonPressed;
+int buttonNum;
 
 //-------------------- Light --------------------//
 
@@ -70,21 +71,27 @@ bool isButtonPressed;
 const int NUM_LEDS = BAND1_1 + BAND1_2 + BAND1_3 + BAND1_4 + BAND1_5 + BAND1_6;
 const int BAND1 = BAND1_1, BAND2 = BAND1_2, BAND3 = BAND1_3, BAND4 = BAND1_4, BAND5 = BAND1_5, BAND6 = BAND1_6;
 const int BAND1L = BAND1_1, BAND2L = BAND1_1 + BAND1_2, BAND3L = BAND1_1 + BAND1_2 + BAND1_3, BAND4L = BAND1_1 + BAND1_2 + BAND1_3 + BAND1_4, BAND5L = BAND1_1 + BAND1_2 + BAND1_3 + BAND1_4 + BAND1_5, BAND6L = BAND1_1 + BAND1_2 + BAND1_3 + BAND1_4 + BAND1_5 + BAND1_6;
+CHSV myColor = cyellow;
 const int SCULPTURE_ID = 1;
 #elif defined(__SCULPTURE2__)
 const int NUM_LEDS = BAND2_1 + BAND2_2 + BAND2_3 + BAND2_4 + BAND2_5 + BAND2_6;
 const int BAND1 = BAND2_1, BAND2 = BAND2_2, BAND3 = BAND2_3, BAND4 = BAND2_4, BAND5 = BAND2_5, BAND6 = BAND2_6;
 const int BAND1L = BAND2_1, BAND2L = BAND2_1 + BAND2_2, BAND3L = BAND2_1 + BAND2_2 + BAND2_3, BAND4L = BAND2_1 + BAND2_2 + BAND2_3 + BAND2_4, BAND5L = BAND2_1 + BAND2_2 + BAND2_3 + BAND2_4 + BAND2_5, BAND6L = BAND2_1 + BAND2_2 + BAND2_3 + BAND2_4 + BAND2_5 + BAND2_6;
+CHSV myColor = cpink;
 const int SCULPTURE_ID = 2;
 #else
 #error "invalid sculpture ID"
 #endif
 
 CRGB leds[NUM_LEDS];
-int brightness1, brightness2, brightness3, brightness4, brightness5, brightness6;
-bool isMaxBrightness = false; //to track idle animation direction
-//isMaxBrightness1, isMaxBrightness2, isMaxBrightness3, isMaxBrightness4, isMaxBrightness5, isMaxBrightness6;
+int brightness1, brightness2, brightness3, brightness4, brightness5, brightness6; //band 1 to 6 brightness
+int maxBrightLvl = 255;                                                           //max brightness
+bool isIdleMode = true;
+int activeLedState = 0;            //0 - idle mode, 1 - idle animation has finished dimming, 2 - has reached brightness according to reading, 3 - has held for a few sec
+unsigned int HOLD_DURATION = 3000; //in msec, how long to hold the active brightness level
+bool isMaxBrightness = false;      //to track idle animation direction
 elapsedMillis bandms;
+unsigned int band_delay = BAND_DELAY;
 
 #include "myfunctions.h"
 
@@ -117,8 +124,71 @@ void loop()
 {
 
   read_pushbuttons();
-  
-  idle_animation();
+
+  if (isButtonPressed == true)
+  {
+    isButtonPressed = false; //listen again for button presses
+    isIdleMode = false;
+
+    float reading = ann_readings[buttonNum];
+    maxBrightLvl = int(map(reading, 0.0, 10.0, 31.0, 255.0));
+    band_delay = BAND_DELAY /4 ;//make it faster to differentiate from idle mode
+  }
+
+  if (isIdleMode == true)
+  {
+    fade_animation();
+  }
+  else //show the reading according to bright level
+  {
+    if (activeLedState == 0) //dim the lights
+    {
+      for (int i = 0; i < NUM_LEDS; i++)
+      {
+        leds[i].fadeToBlackBy(8); //dim by (x/256)% till eventually to black
+      }
+      if (leds[0].getAverageLight() == 0)
+      {
+        activeLedState = 1; //go to next state
+        brightness1 = brightness2 = brightness3 = brightness4 = brightness5 = brightness6 = 0;
+        isMaxBrightness = false;
+        bandms = 0;
+      }
+    }
+    else if (activeLedState == 1) //finished dimming, show the reading
+    {
+      //show reading
+      fade_animation();
+      //check whether max bright reached
+      if (isMaxBrightness == true)
+      {
+        activeLedState = 2;
+        bandms = 0;
+      }
+    }
+    else if (activeLedState == 2) //has reached max brightness, hold for a few sec
+    {
+      if (bandms > HOLD_DURATION)
+      {
+        activeLedState = 3; 
+        bandms = 0;
+      }
+    }
+    else if (activeLedState == 3) //has held for a few sec
+    {
+      //dim
+      fade_animation();
+      //check whether dim finished
+      if (isMaxBrightness == false)
+      {
+        isIdleMode = true;
+        maxBrightLvl = 255;
+        activeLedState = 0;
+        bandms = 0;
+        band_delay = BAND_DELAY;
+      }
+    }
+  }
 
   FastLED.show();
   FastLED.delay(1000 / UPDATES_PER_SECOND);
