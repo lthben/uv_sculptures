@@ -156,7 +156,10 @@ void loop()
         }
       }
     }
-  }
+
+    activeLedState = 0; //reset the led if currently active
+
+  } //end of button press one-time response
 
   if (isIdleMode == true)
   {
@@ -181,30 +184,21 @@ void loop()
         if (leds[0].getAverageLight() == 0)
         {
           activeLedState = 1; //go to next state
-          brightness1 = brightness2 = brightness3 = brightness4 = brightness5 = brightness6 = 0;
-          isMaxBrightness = false;
           bandms = 0;
           readingsCounter = 0;
         }
       }
       else if (activeLedState == 1) //finished dimming, show the reading
       {
-        if (bandms > readingsCounter * BAND_DELAY)
-        {
-          // myColor.val = readings[readingsCounter];
-          // for (int i = 0; i < NUM_LEDS; i++)
-          // {
-          //   leds[i] = myColor;
-          // }
-          // readingsCounter++;
-
+        if (bandms < BAND_DELAY)
+        {        
           currVal = readings[readingsCounter];
 
           if (currVal > prevVal)
           {
             if (myColor.val < currVal)
             {
-              myColor.val++; //brighten
+              myColor.val += 4; //brighten
             }
             for (int i = 0; i < NUM_LEDS; i++)
             {
@@ -215,15 +209,17 @@ void loop()
           {
             if (myColor.val > currVal)
             {
-              myColor.val--; //dim
+              myColor.val -= 4; //dim
             }
             for (int i = 0; i < NUM_LEDS; i++)
             {
               leds[i] = myColor;
             }
           }
-
-          currVal = prevVal;
+        }
+        else
+        {
+          prevVal = currVal;
           readingsCounter++;
 
           if (readingsCounter == 20)
@@ -231,6 +227,7 @@ void loop()
             activeLedState = 2; //go to next state
             bandms = 0;
           }
+          bandms = 0;
         }
       }
       else if (activeLedState == 2)
