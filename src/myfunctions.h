@@ -1,52 +1,24 @@
 void read_console()
 {
-  button0.update();
-  button1.update();
-  button2.update();
-  button3.update();
-  button4.update();
-  button5.update();
+  myButton.update();
 
-  if (button0.fallingEdge())
+  if (myButton.fallingEdge())
   {
     isButtonPressed = true;
-    buttonNum = 0;
-    Serial.println("button0 pressed");
+    Serial.println("button pressed");
   }
 
-  if (button1.fallingEdge())
+  currSliderVal = analogRead(sliderPin);
+  if (currSliderVal != prevSliderVal)
   {
-    isButtonPressed = true;
-    buttonNum = 1;
-    Serial.println("button1 pressed");
+    isSliderMoved = true;
+    sliderVal = currSliderVal;
+    prevSliderVal = currSliderVal;
+    bandms = 0;
   }
-
-  if (button2.fallingEdge())
+  else if (bandms > SLIDER_WAIT)
   {
-    isButtonPressed = true;
-    buttonNum = 2;
-    Serial.println("button2 pressed");
-  }
-
-  if (button3.fallingEdge())
-  {
-    isButtonPressed = true;
-    buttonNum = 3;
-    Serial.println("button3 pressed");
-  }
-
-  if (button4.fallingEdge())
-  {
-    isButtonPressed = true;
-    buttonNum = 4;
-    Serial.println("button4 pressed");
-  }
-
-  if (button5.fallingEdge())
-  {
-    isButtonPressed = true;
-    buttonNum = 5;
-    Serial.println("button5 pressed");
+    playMode = IDLE_MODE;
   }
 }
 
@@ -222,7 +194,7 @@ void fade_animation()
   }
 }
 
-void process_ann_readings()
+void play_ann_readings()
 {
   if (activeLedState == 0) //dim the lights
   {
@@ -264,11 +236,101 @@ void process_ann_readings()
     //check whether dim finished
     if (isMaxBrightness == false)
     {
-      isIdleMode = true;
+      playMode = IDLE_MODE;
       maxBrightLvl = 255;
       activeLedState = 0;
       bandms = 0;
       band_delay = BAND_DELAY;
+    }
+  }
+}
+
+void play_sohsuang_readings()
+{
+  if (activeLedState == 0) //dim the lights
+  {
+    for (int i = 0; i < NUM_LEDS; i++)
+    {
+      leds[i].fadeToBlackBy(8); //dim by (x/256)% till eventually to black
+    }
+    if (leds[0].getAverageLight() == 0)
+    {
+      activeLedState = 1; //go to next state
+      bandms = 0;
+      readingsCounter = 0;
+    }
+  }
+  else if (activeLedState == 1) //finished dimming, show the reading
+  {
+    if (bandms < BAND_DELAY)
+    {
+      currVal = readings[readingsCounter];
+
+      if (currVal > prevVal)
+      {
+        if (myColor.val < currVal)
+        {
+          myColor.val += 4; //brighten
+        }
+        for (int i = 0; i < NUM_LEDS; i++)
+        {
+          leds[i] = myColor;
+        }
+      }
+      else
+      {
+        if (myColor.val > currVal)
+        {
+          myColor.val -= 4; //dim
+        }
+        for (int i = 0; i < NUM_LEDS; i++)
+        {
+          leds[i] = myColor;
+        }
+      }
+    }
+    else
+    {
+      prevVal = currVal;
+      readingsCounter++;
+
+      if (readingsCounter == 20)
+      {
+        activeLedState = 2; //go to next state
+        bandms = 0;
+      }
+      bandms = 0;
+    }
+  }
+  else if (activeLedState == 2)
+  {
+    for (int i = 0; i < NUM_LEDS; i++)
+    {
+      leds[i].fadeToBlackBy(8); //dim by (x/256)% till eventually to black
+    }
+    if (leds[0].getAverageLight() == 0)
+    {
+      activeLedState = 0; //go to next state
+      bandms = 0;
+      playMode = IDLE_MODE;
+    }
+  }
+}
+
+void register_readings()
+{
+  if (SCULPTURE_ID == 1)
+  {
+    for (int i = 0; i < NUMDATA1; i++)
+    {
+      readings[i] = int(map(ann_readings[i], 0.0, 8.0, 31.0, 255.0));
+    }
+  }
+  else if (SCULPTURE_ID == 2) //get the readings once
+  {
+    for (int i = 0; i < NUMDATA2; i++)
+    {
+      readings[i] = int(map(sohsuang_readings[i], 0.0, 8.0, 31.0, 255.0));
     }
   }
 }
