@@ -1,6 +1,6 @@
-/*
+/*--------------------------------------------------------------------------------
   Reads button and slider
-*/
+--------------------------------------------------------------------------------*/
 void read_console()
 {
   myButton.update();
@@ -11,22 +11,26 @@ void read_console()
     Serial.println("button pressed");
   }
 
-  currSliderVal = analogRead(sliderPin);
+  if (playMode != BUTTON_MODE) //don't interrupt the button mode with slider
+  {
+    currSliderVal = analogRead(sliderPin);
+  }
 
-  if (abs(currSliderVal - prevSliderVal) > 20) //some noise
+  if (abs(currSliderVal - prevSliderVal) > 50) //to ignore noise
   {
     if (SCULPTURE_ID == 1)
     {
       currSliderPosIndex = int(map(currSliderVal, 0, 1023, 0, NUMDATA1 - 1));
-      Serial.print("currSliderVal: ");
-      Serial.print(currSliderVal);
-      Serial.print("\t currSliderPosIndex: ");
-      Serial.println(currSliderPosIndex);
     }
     else //sculpture 2
     {
       currSliderPosIndex = int(map(currSliderVal, 0, 1023, 0, NUMDATA2 - 1));
     }
+
+    Serial.print("currSliderVal: ");
+    Serial.print(currSliderVal);
+    Serial.print("\t currSliderPosIndex: ");
+    Serial.println(currSliderPosIndex);
 
     if (currSliderPosIndex != prevSliderPosIndex)
     {
@@ -43,6 +47,7 @@ void read_console()
       }
 
       isSliderToggled = true;
+      activeLedState = 0;
     }
 
     sliderVal = currSliderVal;
@@ -52,9 +57,9 @@ void read_console()
   }
 }
 
-/*
+/*--------------------------------------------------------------------------------
   Tracks fade bright levels
-*/
+--------------------------------------------------------------------------------*/
 int get_brightness(int _brightness)
 {
   if (!isMaxBrightness)
@@ -73,9 +78,9 @@ int get_brightness(int _brightness)
   }
 }
 
-/*
+/*--------------------------------------------------------------------------------
   Fade in and out from inner to outer bands and vice versaa
-*/
+--------------------------------------------------------------------------------*/
 void fade_animation()
 {
   if (!isMaxBrightness)
@@ -92,9 +97,9 @@ void fade_animation()
   {
     for (int i = BAND5L; i < BAND6L; i++)
     {
-      int brightlevel = get_brightness(brightness5);
+      int brightlevel = get_brightness(brightness6);
       myColor.val = brightlevel;
-      brightness5 = brightlevel;
+      brightness6 = brightlevel;
       leds[i] = myColor;
     }
   }
@@ -115,9 +120,9 @@ void fade_animation()
     {
       for (int i = BAND4L; i < BAND5L; i++)
       {
-        int brightlevel = get_brightness(brightness4);
+        int brightlevel = get_brightness(brightness5);
         myColor.val = brightlevel;
-        brightness4 = brightlevel;
+        brightness5 = brightlevel;
         leds[i] = myColor;
       }
     }
@@ -139,9 +144,9 @@ void fade_animation()
     {
       for (int i = BAND3L; i < BAND4L; i++)
       {
-        int brightlevel = get_brightness(brightness3);
+        int brightlevel = get_brightness(brightness4);
         myColor.val = brightlevel;
-        brightness3 = brightlevel;
+        brightness4 = brightlevel;
         leds[i] = myColor;
       }
     }
@@ -153,9 +158,9 @@ void fade_animation()
     {
       for (int i = BAND3L; i < BAND4L; i++)
       {
-        int brightlevel = get_brightness(brightness3);
+        int brightlevel = get_brightness(brightness4);
         myColor.val = brightlevel;
-        brightness3 = brightlevel;
+        brightness4 = brightlevel;
         leds[i] = myColor;
       }
     }
@@ -177,9 +182,9 @@ void fade_animation()
     {
       for (int i = BAND4L; i < BAND5L; i++)
       {
-        int brightlevel = get_brightness(brightness4);
+        int brightlevel = get_brightness(brightness5);
         myColor.val = brightlevel;
-        brightness4 = brightlevel;
+        brightness5 = brightlevel;
         leds[i] = myColor;
       }
     }
@@ -201,9 +206,9 @@ void fade_animation()
     {
       for (int i = BAND5L; i < BAND6L; i++)
       {
-        int brightlevel = get_brightness(brightness5);
+        int brightlevel = get_brightness(brightness6);
         myColor.val = brightlevel;
-        brightness5 = brightlevel;
+        brightness6 = brightlevel;
         leds[i] = myColor;
         if (brightlevel == maxBrightLvl)
         {
@@ -230,9 +235,9 @@ void fade_animation()
   }
 }
 
-/*
-  Run once during setup to register readings
-*/
+/*--------------------------------------------------------------------------------
+  Run once during setup to register brightness readings
+--------------------------------------------------------------------------------*/
 void register_readings()
 { //get the readings once, translate data to a light brightness value
   if (SCULPTURE_ID == 1)
@@ -251,9 +256,24 @@ void register_readings()
   }
 }
 
-/*
+/*--------------------------------------------------------------------------------
+  Prep to go to idle mode
+--------------------------------------------------------------------------------*/
+void go_idle()
+{
+  activeLedState = 0; //go to idle state
+  playMode = IDLE_MODE;
+  band_delay = BAND_DELAY;
+  maxBrightLvl = 255;
+  Serial.println("IDLE MODE");
+  isMaxBrightness = false;
+  brightness1 = brightness2 = brightness3 = brightness4 = brightness5 = brightness6 = 0;
+  bandms = 0;
+}
+
+/*--------------------------------------------------------------------------------
   For button mode
-*/
+--------------------------------------------------------------------------------*/
 void playback_readings() //light sequence playback according to readings[] array
 {
   if (activeLedState == 0) //dim the lights
@@ -262,59 +282,62 @@ void playback_readings() //light sequence playback according to readings[] array
     {
       leds[i].fadeToBlackBy(8); //dim by (x/256)% till eventually to black
     }
-    if (leds[0].getAverageLight() == 0)
+    if (leds[0].getAverageLight() == 0 && leds[NUM_LEDS - 1].getAverageLight() == 0 && leds[int(NUM_LEDS / 2)].getAverageLight() == 0)
     {
       activeLedState = 1; //go to next state
       bandms = 0;
       readingsCounter = 0;
+      currBrightVal = prevBrightVal = 0;
+      myColor.val = 0;
     }
   }
   else if (activeLedState == 1) //finished dimming, show the reading
   {
-    if (bandms < BAND_DELAY)
+    if (bandms < BAND_DELAY * 2)
     {
       if (SCULPTURE_ID == 1)
       {
         currBrightVal = readings1[readingsCounter];
       }
-      else
+      else //sculpture 2
       {
         currBrightVal = readings2[readingsCounter];
       }
+
       if (currBrightVal > prevBrightVal)
       {
         if (myColor.val < currBrightVal)
         {
-          myColor.val += 4; //brighten
-        }
-        for (int i = 0; i < NUM_LEDS; i++)
-        {
-          leds[i] = myColor;
+          myColor.val += 2; //brighten
         }
       }
-      else
+      else //curr is < prev bright val
       {
         if (myColor.val > currBrightVal)
         {
-          myColor.val -= 4; //dim
-        }
-        for (int i = 0; i < NUM_LEDS; i++)
-        {
-          leds[i] = myColor;
+          myColor.val -= 2; //dim
         }
       }
+      for (int i = 0; i < NUM_LEDS; i++)
+      {
+        leds[i] = myColor;
+      }
     }
-    else
+    else //go to next bright value
     {
       prevBrightVal = currBrightVal;
       readingsCounter++;
+      Serial.print("readingsCounter: ");
+      Serial.print(readingsCounter);
+      Serial.print("\t currBrightVal: ");
+      Serial.println(currBrightVal);
+
+      bandms = 0; //need to reset here
 
       if ((SCULPTURE_ID == 1 && readingsCounter == NUMDATA1) || (SCULPTURE_ID == 2 && readingsCounter == NUMDATA2))
       {
         activeLedState = 2; //go to next state
-        bandms = 0;
       }
-      bandms = 0;
     }
   }
   else if (activeLedState == 2)
@@ -323,39 +346,49 @@ void playback_readings() //light sequence playback according to readings[] array
     {
       leds[i].fadeToBlackBy(8); //dim by (x/256)% till eventually to black
     }
-    if (leds[0].getAverageLight() == 0)
+    if (leds[0].getAverageLight() == 0 && leds[NUM_LEDS - 1].getAverageLight() == 0 && leds[int(NUM_LEDS / 2)].getAverageLight() == 0)
     {
-      activeLedState = 0; //go to idle state
-      playMode = IDLE_MODE;
-      band_delay = BAND_DELAY;
-      maxBrightLvl = 255;
-      Serial.println("IDLE MODE");
-      bandms = 0;
+      go_idle();
     }
   }
 }
 
-/*
+/*--------------------------------------------------------------------------------
   For slider mode
-*/
+--------------------------------------------------------------------------------*/
 void toggle_readings()
 {
-  for (int i = 0; i < NUM_LEDS; i++)
+  if (activeLedState == 0)
   {
-    myColor.val = maxBrightLvl;
-    leds[i] = myColor;
-  }
+    for (int i = 0; i < NUM_LEDS; i++)
+    {
+      myColor.val = maxBrightLvl;
+      leds[i] = myColor;
+    }
 
-  if (bandms > SLIDER_WAIT)
+    if (bandms > SLIDER_WAIT)
+    {
+      activeLedState = 1;
+    }
+  }
+  else if (activeLedState == 1)
   {
-    playMode = IDLE_MODE;
-    maxBrightLvl = 255;
-    band_delay = BAND_DELAY;
-    Serial.println("IDLE MODE");
+    for (int i = 0; i < NUM_LEDS; i++)
+    {
+      leds[i].fadeToBlackBy(8); //dim by (x/256)% till eventually to black
+    }
+    if (leds[0].getAverageLight() == 0 && leds[NUM_LEDS - 1].getAverageLight() == 0 && leds[int(NUM_LEDS / 2)].getAverageLight() == 0)
+    {
+      activeLedState = 2; //go to next state
+    }
+  }
+  else if (activeLedState == 2)
+  {
+    go_idle();
   }
 }
 
-/* 
+/* --------------------------------------------------------------------------------
 //This animation is no longer used
 void play_ann_readings()
 {
