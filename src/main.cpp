@@ -21,19 +21,19 @@
 
 //-------------------- USER DEFINED SETTINGS --------------------//
 
-#define __SCULPTURE2__ //SCULPTURE1 is Ann, SCULPTURE2 is Soh and Suang Suang
+#define __SCULPTURE1__ //SCULPTURE1 is Ann, SCULPTURE2 is Soh and Suang Suang
 
-const int NUMDATA1 = 5, NUMDATA2 = 8; //number of data points for each sculpture
+const int NUMDATA1 = 5, NUMDATA2 = 8;                               //number of data points for each sculpture
 const float ann_readings[NUMDATA1] = {2.94, 4.27, 4.09, 0.42, 8.0}; //6 buttons for 6 data points
 
-const int BAND1_1 = 7, BAND1_2 = 4, BAND1_3 = 3, BAND1_4 = 2, BAND1_5 = 2, BAND1_6 = 2; //Sculpture 1: num of pixels per band
-const int BAND2_1 = 4, BAND2_2 = 3, BAND2_3 = 3, BAND2_4 = 2, BAND2_5 = 2, BAND2_6 = 2; //Sculpture 2: num of pixels per band
+const int BAND1_1 = 4, BAND1_2 = 4, BAND1_3 = 4, BAND1_4 = 4, BAND1_5 = 4, BAND1_6 = 4; //Sculpture 1: num of pixels per band
+const int BAND2_1 = 4, BAND2_2 = 4, BAND2_3 = 4, BAND2_4 = 4, BAND2_5 = 4, BAND2_6 = 4; //Sculpture 2: num of pixels per band
 
 //follow shape of graph. 20 data points
-const float sohsuang_readings[NUMDATA2] = {0.13, 0.06, 1.6, 4.38, 7.0, 1.51, 3.8, 0.04 };
+const float sohsuang_readings[NUMDATA2] = {0.13, 0.06, 1.6, 4.38, 7.0, 1.51, 3.8, 0.04};
 
 const int BAND_DELAY = 500;    //ms delay between each band lightup
-const int SLIDER_WAIT = 3000;  //ms idle for slider movement before IDLE_MODE kicks in
+const int SLIDER_WAIT = 5000;  //ms idle for slider movement before IDLE_MODE kicks in
 #define UPDATES_PER_SECOND 100 //speed of light animation
 CHSV cyellow(64, 255, 255);
 CHSV cpink(224, 255, 255);
@@ -46,10 +46,10 @@ const int buttonPin = 0, sliderPin = 22;
 
 Bounce myButton = Bounce(buttonPin, 15); // 15 = 15 ms debounce time
 
-unsigned int sliderVal;
-unsigned int prevSliderVal, currSliderVal;
+unsigned int sliderVal, prevSliderVal, currSliderVal;
+unsigned int sliderPosIndex, prevSliderPosIndex, currSliderPosIndex; //0 - 4 for Ann, 0 - 7 for Soh & Suang
 
-bool isButtonPressed, isSliderMoved;
+bool isButtonPressed, isSliderToggled;
 
 //-------------------- Light --------------------//
 
@@ -79,15 +79,13 @@ int brightness1, brightness2, brightness3, brightness4, brightness5, brightness6
 int maxBrightLvl = 255;                                                           //variable max brightness
 const int IDLE_MODE = 1, BUTTON_MODE = 2, SLIDER_MODE = 3;
 unsigned int playMode = IDLE_MODE; //1 - idle mode; 2 - button mode; 3 - slider mode
-int activeLedState = 0;            //SCULPTURE 1 : 0 - idle mode, 1 - idle animation has finished dimming, 2 - show brightness according to reading, 3 - has held for a few sec, fade to black and idle
-                                   //SCULPTURE 2: 0 - idle mode, 1 - idle animation has finished dimming, show reading animations, 2 - has completed animations, fade to black and idle
-unsigned int HOLD_DURATION = 3000; //in msec, how long to hold the active brightness level
+int activeLedState = 0;            //SCULPTURE 1 : 0 - idle mode, start fade to black 1 - show brightness according to reading, 2 - has completed animations, fade to black and idle
 bool isMaxBrightness = false;      //to track idle animation direction
-elapsedMillis bandms;
+elapsedMillis bandms;              //multiple use time ellapsed tracker
 unsigned int band_delay = BAND_DELAY;
-int readings[20];              //light values for sculpture 2
-unsigned int readingsCounter;  //keeps track of indexing the readings array
-unsigned int prevVal, currVal; //for comparing prev and current values for dimming and brightening
+int readings1[NUMDATA1], readings2[NUMDATA2]; //light values translated from UV readings
+unsigned int readingsCounter;                 //keeps track of indexing the readings array
+unsigned int prevBrightVal, currBrightVal;    //for comparing prev and current values for dimming and brightening
 
 #include "myfunctions.h"
 
@@ -106,6 +104,8 @@ void setup()
   FastLED.setBrightness(255);
 
   delay(10);
+
+  register_readings(); //register the ann or sohsuang readings into a readings[] array.
 }
 
 //-------------------- Loop --------------------//
@@ -118,37 +118,31 @@ void loop()
   {
     isButtonPressed = false; //listen again for button presses
     playMode = BUTTON_MODE;
+    Serial.println("BUTTON MODE");
 
-    register_readings(); //register the ann or sohsuang readings into readings[] array. Done once per button press.
-
-    activeLedState = 0; //reset the led if currently active
+    activeLedState = 0;          //reset the led if currently active
+    band_delay = BAND_DELAY / 4; //speed up the fade animation
   }
-  else if (isSliderMoved == true)
+  else if (isSliderToggled == true)
   {
-    isSliderMoved = false; //listen again for slider movement
+    isSliderToggled = false; //listen again for slider movement
     playMode = SLIDER_MODE;
-  }
+    Serial.println("SLIDER MODE");
 
-  if (playMode = IDLE_MODE)
+    band_delay = BAND_DELAY / 4; //speed up the fade animation
+  } 
+
+  if (playMode == IDLE_MODE)
   {
     fade_animation();
   }
-  else if (playMode == BUTTON_MODE) //play in sequence the readings according to bright level
+  else if (playMode == BUTTON_MODE)
   {
-    if (SCULPTURE_ID == 1)
-    {
-      play_ann_readings();
-    }
-    else if (SCULPTURE_ID == 2)
-    {
-      play_sohsuang_readings();
-    }
+    playback_readings(); //play brightness sequence according to readings[] array
   }
   else if (playMode == SLIDER_MODE)
   {
-    if (true)
-    {
-    }
+    toggle_readings(); //toggle according to the slider
   }
 
   FastLED.show();
