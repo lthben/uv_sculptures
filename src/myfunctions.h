@@ -27,11 +27,6 @@ void read_console()
       currSliderPosIndex = int(map(currSliderVal, 0, 1023, 0, NUMDATA2 - 1));
     }
 
-    Serial.print("currSliderVal: ");
-    Serial.print(currSliderVal);
-    Serial.print("\t currSliderPosIndex: ");
-    Serial.println(currSliderPosIndex);
-
     if (currSliderPosIndex != prevSliderPosIndex)
     {
       sliderPosIndex = currSliderPosIndex;
@@ -48,6 +43,11 @@ void read_console()
 
       isSliderToggled = true;
       activeLedState = 0;
+
+      Serial.print("currSliderVal: ");
+      Serial.print(currSliderVal);
+      Serial.print("\t currSliderPosIndex: ");
+      Serial.println(currSliderPosIndex);
     }
 
     sliderVal = currSliderVal;

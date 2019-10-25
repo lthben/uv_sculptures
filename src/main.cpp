@@ -3,11 +3,10 @@
   Date: Oct 2019
   Description: 
       Teensy 3.2 with audio shield. 
-      Sculpture 1 has 6 buttons. Sculpture 2 has 2 buttons and 2 sliders. 
+      Sculpture 1 and 2 have one button and one slider each.
+      The button is playback mode for the light readings. The slider is toggle mode for the different readings. 
       Both have bands of neon flex leds to show the UV levels in the form of light. 
       There are sounds associated with all light animations, including a pulsing idle animation. 
-      Sculpture 1 shows UV levels in 6 diff places. 
-      Sculpture 2 has a playback mode for the buttons and sliders to show UV levels across time at a location. 
 */
 
 #include <Arduino.h>
@@ -23,27 +22,40 @@
 
 #define __SCULPTURE2__ //SCULPTURE1 is Ann, SCULPTURE2 is Soh and Suang Suang
 
-const int NUMDATA1 = 5, NUMDATA2 = 8;                               //number of data points for each sculpture
-const float ann_readings[NUMDATA1] = {2.94, 4.27, 4.09, 0.42, 8.0}; 
+const int NUMDATA1 = 5, NUMDATA2 = 8; //number of data points for each sculpture
+const float ann_readings[NUMDATA1] = {2.94, 4.27, 4.09, 0.42, 8.0};
 // const float sohsuang_readings[NUMDATA2] = {0.13, 0.06, 1.6, 4.38, 7.0, 1.51, 3.8, 0.04};
 const float sohsuang_readings[NUMDATA2] = {1.0, 7.0, 1.0, 7.0, 1.0, 7.0, 1.0, 7.0};
 
 const int BAND1_1 = 4, BAND1_2 = 4, BAND1_3 = 4, BAND1_4 = 4, BAND1_5 = 4, BAND1_6 = 4; //Sculpture 1: num of pixels per band
 const int BAND2_1 = 4, BAND2_2 = 4, BAND2_3 = 4, BAND2_4 = 4, BAND2_5 = 4, BAND2_6 = 4; //Sculpture 2: num of pixels per band
 
+const int BAND_DELAY = 500;   //ms delay between each band lightup
+const int SLIDER_WAIT = 3000; //ms idle for slider movement before IDLE_MODE kicks in
 
-const int BAND_DELAY = 500;    //ms delay between each band lightup
-const int SLIDER_WAIT = 3000;  //ms idle for slider movement before IDLE_MODE kicks in
-#define UPDATES_PER_SECOND 100 //speed of light animation
 CHSV cyellow(64, 255, 255);
 CHSV cpink(224, 255, 255);
 
-const int buttonPin = 0, sliderPin = 22;
-
 //-------------------- Audio --------------------//
+
+// GUItool: begin automatically generated code. See https://www.pjrc.com/teensy/gui/index.html
+AudioPlaySdWav playSdWav1; //xy=416,186
+AudioOutputI2S i2s1;       //xy=821,189
+AudioConnection patchCord1(playSdWav1, 0, i2s1, 0);
+AudioConnection patchCord2(playSdWav1, 1, i2s1, 1);
+AudioControlSGTL5000 sgtl5000_1; //xy=615,336
+// GUItool: end automatically generated code
+
+// Use these with the Teensy Audio Shield
+#define SDCARD_CS_PIN 10
+#define SDCARD_MOSI_PIN 7
+#define SDCARD_SCK_PIN 14
+
+float vol = 0.8; //master volume gain 0.0 - 1.0
 
 //-------------------- Buttons and Sliders --------------------//
 
+const int buttonPin = 0, sliderPin = 22;
 Bounce myButton = Bounce(buttonPin, 15); // 15 = 15 ms debounce time
 
 unsigned int sliderVal, prevSliderVal, currSliderVal;
@@ -64,15 +76,19 @@ const int BAND1 = BAND1_1, BAND2 = BAND1_2, BAND3 = BAND1_3, BAND4 = BAND1_4, BA
 const int BAND1L = BAND1_1, BAND2L = BAND1_1 + BAND1_2, BAND3L = BAND1_1 + BAND1_2 + BAND1_3, BAND4L = BAND1_1 + BAND1_2 + BAND1_3 + BAND1_4, BAND5L = BAND1_1 + BAND1_2 + BAND1_3 + BAND1_4 + BAND1_5, BAND6L = BAND1_1 + BAND1_2 + BAND1_3 + BAND1_4 + BAND1_5 + BAND1_6;
 CHSV myColor = cyellow;
 const int SCULPTURE_ID = 1;
+const char *idleTrack = "DRONE1.WAV", *activeTrack = "RAYGUN.WAV";
 #elif defined(__SCULPTURE2__)
 const int NUM_LEDS = BAND2_1 + BAND2_2 + BAND2_3 + BAND2_4 + BAND2_5 + BAND2_6;
 const int BAND1 = BAND2_1, BAND2 = BAND2_2, BAND3 = BAND2_3, BAND4 = BAND2_4, BAND5 = BAND2_5, BAND6 = BAND2_6;
 const int BAND1L = BAND2_1, BAND2L = BAND2_1 + BAND2_2, BAND3L = BAND2_1 + BAND2_2 + BAND2_3, BAND4L = BAND2_1 + BAND2_2 + BAND2_3 + BAND2_4, BAND5L = BAND2_1 + BAND2_2 + BAND2_3 + BAND2_4 + BAND2_5, BAND6L = BAND2_1 + BAND2_2 + BAND2_3 + BAND2_4 + BAND2_5 + BAND2_6;
 CHSV myColor = cpink;
 const int SCULPTURE_ID = 2;
+const char *idleTrack = "DRONE2.WAV", *activeTrack = "TINKLING.WAV";
 #else
 #error "invalid sculpture ID"
 #endif
+
+#define UPDATES_PER_SECOND 100 //speed of light animation
 
 CRGB leds[NUM_LEDS];
 int brightness1, brightness2, brightness3, brightness4, brightness5, brightness6; //band 1 to 6 brightness
@@ -97,6 +113,22 @@ void setup()
   pinMode(buttonPin, INPUT_PULLUP);
 
   Serial.begin(9600);
+
+  AudioMemory(8);
+
+  sgtl5000_1.enable();
+  sgtl5000_1.volume(0.5);
+
+  SPI.setMOSI(SDCARD_MOSI_PIN);
+  SPI.setSCK(SDCARD_SCK_PIN);
+  if (!(SD.begin(SDCARD_CS_PIN)))
+  {
+    while (1)
+    {
+      Serial.println("Unable to access the SD card");
+      delay(500);
+    }
+  }
 
   delay(2000); //power up safety delay
 
@@ -130,7 +162,7 @@ void loop()
     Serial.println("SLIDER MODE");
 
     band_delay = BAND_DELAY / 4; //speed up the fade animation
-  } 
+  }
 
   if (playMode == IDLE_MODE)
   {
@@ -143,6 +175,27 @@ void loop()
   else if (playMode == SLIDER_MODE)
   {
     toggle_readings(); //toggle according to the slider
+  }
+
+  if (playMode == IDLE_MODE)
+  {
+    if (playSdWav1.isPlaying() == false)
+    {
+      playSdWav1.play(idleTrack);
+      delay(10);
+      Serial.print("Start playing ");
+      Serial.println(idleTrack);
+    }
+  }
+  else if (playMode == BUTTON_MODE || playMode == SLIDER_MODE)
+  {
+    if (playSdWav1.isPlaying() == false)
+    {
+      playSdWav1.play(activeTrack);
+      delay(10);
+      Serial.print("Start playing ");
+      Serial.println(activeTrack);
+    }
   }
 
   FastLED.show();
