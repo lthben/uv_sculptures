@@ -20,7 +20,8 @@
 
 //-------------------- USER DEFINED SETTINGS --------------------//
 
-#define __SCULPTURE2__ //SCULPTURE1 is Ann, SCULPTURE2 is Soh and Suang Suang
+
+#define __SCULPTURE1__ //SCULPTURE1 is Ann, SCULPTURE2 is Soh and Suang Suang
 
 const int NUMDATA1 = 5, NUMDATA2 = 8; //number of data points for each sculpture
 const float ann_readings[NUMDATA1] = {2.94, 4.27, 4.09, 0.42, 8.0};
@@ -35,6 +36,7 @@ const int SLIDER_WAIT = 3000; //ms idle for slider movement before IDLE_MODE kic
 
 CHSV cyellow(64, 255, 255);
 CHSV cpink(224, 255, 255);
+
 
 //-------------------- Audio --------------------//
 
@@ -51,11 +53,12 @@ AudioControlSGTL5000 sgtl5000_1; //xy=615,336
 #define SDCARD_MOSI_PIN 7
 #define SDCARD_SCK_PIN 14
 
-float vol = 0.8; //master volume gain 0.0 - 1.0
+float vol = 0.5; //master volume gain 0.0 - 1.0
 
 //-------------------- Buttons and Sliders --------------------//
 
-const int buttonPin = 0, sliderPin = 22;
+const int buttonPin = 0;
+const int sliderPin = A6;//A8 does not work for some strange reason. Causes sound to not be heard even when playing.
 Bounce myButton = Bounce(buttonPin, 15); // 15 = 15 ms debounce time
 
 unsigned int sliderVal, prevSliderVal, currSliderVal;
@@ -64,7 +67,6 @@ unsigned int sliderPosIndex, prevSliderPosIndex, currSliderPosIndex; //0 - 4 for
 bool isButtonPressed, isSliderToggled;
 
 //-------------------- Light --------------------//
-
 #define LED_PIN 6
 
 #define LED_TYPE UCS1903
@@ -76,14 +78,16 @@ const int BAND1 = BAND1_1, BAND2 = BAND1_2, BAND3 = BAND1_3, BAND4 = BAND1_4, BA
 const int BAND1L = BAND1_1, BAND2L = BAND1_1 + BAND1_2, BAND3L = BAND1_1 + BAND1_2 + BAND1_3, BAND4L = BAND1_1 + BAND1_2 + BAND1_3 + BAND1_4, BAND5L = BAND1_1 + BAND1_2 + BAND1_3 + BAND1_4 + BAND1_5, BAND6L = BAND1_1 + BAND1_2 + BAND1_3 + BAND1_4 + BAND1_5 + BAND1_6;
 CHSV myColor = cyellow;
 const int SCULPTURE_ID = 1;
-const char *idleTrack = "DRONE1.WAV", *activeTrack = "RAYGUN.WAV";
+const char *idleTrack = "DRONE1.WAV"; const char *activeTrack = "RAYGUN.WAV";
+// String idleTrack = "DRONE1.WAV"; String activeTrack = "RAYGUN.WAV";
 #elif defined(__SCULPTURE2__)
 const int NUM_LEDS = BAND2_1 + BAND2_2 + BAND2_3 + BAND2_4 + BAND2_5 + BAND2_6;
 const int BAND1 = BAND2_1, BAND2 = BAND2_2, BAND3 = BAND2_3, BAND4 = BAND2_4, BAND5 = BAND2_5, BAND6 = BAND2_6;
 const int BAND1L = BAND2_1, BAND2L = BAND2_1 + BAND2_2, BAND3L = BAND2_1 + BAND2_2 + BAND2_3, BAND4L = BAND2_1 + BAND2_2 + BAND2_3 + BAND2_4, BAND5L = BAND2_1 + BAND2_2 + BAND2_3 + BAND2_4 + BAND2_5, BAND6L = BAND2_1 + BAND2_2 + BAND2_3 + BAND2_4 + BAND2_5 + BAND2_6;
 CHSV myColor = cpink;
 const int SCULPTURE_ID = 2;
-const char *idleTrack = "DRONE2.WAV", *activeTrack = "TINKLING.WAV";
+const char *idleTrack = "DRONE2.WAV"; const char *activeTrack = "TINKLING.WAV";
+// String idleTrack = "DRONE2.WAV"; String activeTrack = "TINKLING.WAV";
 #else
 #error "invalid sculpture ID"
 #endif
@@ -95,6 +99,7 @@ int brightness1, brightness2, brightness3, brightness4, brightness5, brightness6
 int maxBrightLvl = 255;                                                           //variable max brightness
 const int IDLE_MODE = 1, BUTTON_MODE = 2, SLIDER_MODE = 3;
 unsigned int playMode = IDLE_MODE; //1 - idle mode; 2 - button mode; 3 - slider mode
+bool hasplayModeChanged; 
 int activeLedState = 0;            //SCULPTURE 1 : 0 - idle mode, start fade to black 1 - show brightness according to reading, 2 - has completed animations, fade to black and idle
 bool isMaxBrightness = false;      //to track idle animation direction
 elapsedMillis bandms;              //multiple use time ellapsed tracker
@@ -109,15 +114,15 @@ unsigned int prevBrightVal, currBrightVal;    //for comparing prev and current v
 
 void setup()
 {
-  pinMode(sliderPin, INPUT);
   pinMode(buttonPin, INPUT_PULLUP);
+  pinMode(sliderPin, INPUT);
 
   Serial.begin(9600);
 
   AudioMemory(8);
 
   sgtl5000_1.enable();
-  sgtl5000_1.volume(0.5);
+  sgtl5000_1.volume(vol);
 
   SPI.setMOSI(SDCARD_MOSI_PIN);
   SPI.setSCK(SDCARD_SCK_PIN);
@@ -137,7 +142,7 @@ void setup()
 
   delay(10);
 
-  register_readings(); //translate the ann or sohsuang readings into a readings[] brightness value array.
+  register_readings(); //translate the ann or sohsuang readings into a readings[] brightness value array.  
 }
 
 //-------------------- Loop --------------------//
@@ -150,6 +155,7 @@ void loop()
   {
     isButtonPressed = false; //listen again for button presses
     playMode = BUTTON_MODE;
+    hasplayModeChanged = true;//trigger sound change
     Serial.println("BUTTON MODE");
 
     activeLedState = 0;          //reset the led if currently active
@@ -159,6 +165,7 @@ void loop()
   {
     isSliderToggled = false; //listen again for slider movement
     playMode = SLIDER_MODE;
+    hasplayModeChanged = true;//trigger sound change
     Serial.println("SLIDER MODE");
 
     band_delay = BAND_DELAY / 4; //speed up the fade animation
@@ -200,4 +207,43 @@ void loop()
 
   FastLED.show();
   FastLED.delay(1000 / UPDATES_PER_SECOND);
+
+  if (playMode == IDLE_MODE)
+  {
+    if (hasplayModeChanged == true && playSdWav1.isPlaying() == true) 
+    {
+      playSdWav1.stop();
+      playSdWav1.play(idleTrack);
+      delay(10);
+      // Serial.print("Start playing ");
+      // Serial.println(idleTrack);
+      hasplayModeChanged = false;
+    } 
+    else if (playSdWav1.isPlaying() == false)
+    {
+      playSdWav1.play(idleTrack);
+      delay(10);
+      // Serial.print("Start playing ");
+      // Serial.println(idleTrack);
+    }
+  }
+  else if ( playMode == BUTTON_MODE || playMode == SLIDER_MODE)
+  {
+    if (hasplayModeChanged == true && playSdWav1.isPlaying() == true) 
+    {
+      playSdWav1.stop();
+      playSdWav1.play(activeTrack);
+      delay(10);
+      // Serial.print("Start playing ");
+      // Serial.println(activeTrack);
+      hasplayModeChanged = false;
+    }
+    else if (playSdWav1.isPlaying() == false)
+    {
+      playSdWav1.play(activeTrack);
+      delay(10);
+      // Serial.print("Start playing ");
+      // Serial.println(activeTrack);
+    }
+  }
 }

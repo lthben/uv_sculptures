@@ -1,6 +1,8 @@
+
 /*--------------------------------------------------------------------------------
   Reads button and slider
 --------------------------------------------------------------------------------*/
+
 void read_console()
 {
   myButton.update();
@@ -14,6 +16,7 @@ void read_console()
   if (playMode != BUTTON_MODE) //don't interrupt the button mode with slider
   {
     currSliderVal = analogRead(sliderPin);
+    // Serial.print("val: "); Serial.println(currSliderVal);
   }
 
   if (abs(currSliderVal - prevSliderVal) > 50) //to ignore noise
@@ -36,7 +39,7 @@ void read_console()
       {
         maxBrightLvl = readings1[sliderPosIndex];
       }
-      else
+      else //sculpture 2
       {
         maxBrightLvl = readings2[sliderPosIndex];
       }
@@ -58,7 +61,7 @@ void read_console()
 }
 
 /*--------------------------------------------------------------------------------
-  Tracks fade bright levels
+  Tracks fade animation bright levels
 --------------------------------------------------------------------------------*/
 int get_brightness(int _brightness)
 {
@@ -263,12 +266,14 @@ void go_idle()
 {
   activeLedState = 0; //go to idle state
   playMode = IDLE_MODE;
+  hasplayModeChanged = true;//trigger sound change
   band_delay = BAND_DELAY;
   maxBrightLvl = 255;
   Serial.println("IDLE MODE");
   isMaxBrightness = false;
   brightness1 = brightness2 = brightness3 = brightness4 = brightness5 = brightness6 = 0;
   bandms = 0;
+  sgtl5000_1.volume(0.5);
 }
 
 /*--------------------------------------------------------------------------------
@@ -293,7 +298,7 @@ void playback_readings() //light sequence playback according to readings[] array
   }
   else if (activeLedState == 1) //finished dimming, show the reading
   {
-    if (bandms < BAND_DELAY * 2)
+    if (bandms < BAND_DELAY * 2) //control the speed of the fade animation here 
     {
       if (SCULPTURE_ID == 1)
       {
@@ -318,6 +323,13 @@ void playback_readings() //light sequence playback according to readings[] array
           myColor.val -= 2; //dim
         }
       }
+
+      //change vol here
+      vol = map(float(myColor.val), 0.0, 255.0, 0.3, 0.7);
+      sgtl5000_1.volume(vol);
+      // Serial.print("vol: "); Serial.println(vol);
+
+      //change led brightness here
       for (int i = 0; i < NUM_LEDS; i++)
       {
         leds[i] = myColor;
@@ -326,7 +338,8 @@ void playback_readings() //light sequence playback according to readings[] array
     else //go to next bright value
     {
       prevBrightVal = currBrightVal;
-      readingsCounter++;
+      readingsCounter++; 
+
       Serial.print("readingsCounter: ");
       Serial.print(readingsCounter);
       Serial.print("\t currBrightVal: ");
@@ -366,9 +379,14 @@ void toggle_readings()
       leds[i] = myColor;
     }
 
+    //change vol here
+    vol = map(float(myColor.val), 0.0, 255.0, 0.3, 0.7);
+    sgtl5000_1.volume(vol);
+    // Serial.print("vol: "); Serial.println(vol);
+
     if (bandms > SLIDER_WAIT)
     {
-      activeLedState = 1;
+      activeLedState = 1; //start fade before idling
     }
   }
   else if (activeLedState == 1)
