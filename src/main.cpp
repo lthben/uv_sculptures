@@ -21,21 +21,21 @@
 //-------------------- USER DEFINED SETTINGS --------------------//
 
 
-#define __SCULPTURE1__ //SCULPTURE1 is Ann, SCULPTURE2 is Soh and Suang Suang
+#define __SCULPTURE2__ //SCULPTURE1 is Ann, SCULPTURE2 is Soh and Suang Suang
+
+const int BAND1_1 = 4, BAND1_2 = 4, BAND1_3 = 4, BAND1_4 = 4, BAND1_5 = 4, BAND1_6 = 4; //Sculpture 1: num of pixels per band. 6 bands.
+const int BAND2_1 = 4, BAND2_2 = 4, BAND2_3 = 4, BAND2_4 = 4, BAND2_5 = 4, BAND2_6 = 4, BAND2_7 = 4;//Sculpture 2: num of pixels per band. 7 bands.
 
 const int NUMDATA1 = 5, NUMDATA2 = 8; //number of data points for each sculpture
 const float ann_readings[NUMDATA1] = {2.94, 4.27, 4.09, 0.42, 8.0};
-// const float sohsuang_readings[NUMDATA2] = {0.13, 0.06, 1.6, 4.38, 7.0, 1.51, 3.8, 0.04};
-const float sohsuang_readings[NUMDATA2] = {1.0, 7.0, 1.0, 7.0, 1.0, 7.0, 1.0, 7.0};
-
-const int BAND1_1 = 4, BAND1_2 = 4, BAND1_3 = 4, BAND1_4 = 4, BAND1_5 = 4, BAND1_6 = 4; //Sculpture 1: num of pixels per band
-const int BAND2_1 = 4, BAND2_2 = 4, BAND2_3 = 4, BAND2_4 = 4, BAND2_5 = 4, BAND2_6 = 4; //Sculpture 2: num of pixels per band
+// const float sohsuang_readings[NUMDATA2] = {0.13, 0.06, 1.6, 4.38, 7.0, 1.51, 3.8, 0.04}; //actual values
+const float sohsuang_readings[NUMDATA2] = {1.0, 7.0, 1.0, 7.0, 1.0, 7.0, 1.0, 7.0}; //test values
 
 const int BAND_DELAY = 500;   //ms delay between each band lightup
 const int SLIDER_WAIT = 3000; //ms idle for slider movement before IDLE_MODE kicks in
 
-CHSV cyellow(64, 255, 255);
-CHSV cpink(224, 255, 255);
+CHSV cyellow(64, 255, 255); //sculpture 1 colour
+CHSV cpink(224, 255, 255); //sculpture 2 colour
 
 
 //-------------------- Audio --------------------//
@@ -57,7 +57,7 @@ float vol = 0.5; //master volume gain 0.0 - 1.0
 
 //-------------------- Buttons and Sliders --------------------//
 
-const int buttonPin = 0;
+const int buttonPin = 8;
 const int sliderPin = A6;//A8 does not work for some strange reason. Causes sound to not be heard even when playing.
 Bounce myButton = Bounce(buttonPin, 15); // 15 = 15 ms debounce time
 
@@ -67,44 +67,45 @@ unsigned int sliderPosIndex, prevSliderPosIndex, currSliderPosIndex; //0 - 4 for
 bool isButtonPressed, isSliderToggled;
 
 //-------------------- Light --------------------//
-#define LED_PIN 6
+const int LEDPIN0 = 0, LEDPIN1 = 1, LEDPIN2 = 2, LEDPIN3 = 3, LEDPIN4 = 4, LEDPIN5 = 5, LEDPIN6 = 6;
 
 #define LED_TYPE UCS1903
 #define COLOR_ORDER GRB //Yes! GRB!
 
 #if defined(__SCULPTURE1__)
-const int NUM_LEDS = BAND1_1 + BAND1_2 + BAND1_3 + BAND1_4 + BAND1_5 + BAND1_6;
-const int BAND1 = BAND1_1, BAND2 = BAND1_2, BAND3 = BAND1_3, BAND4 = BAND1_4, BAND5 = BAND1_5, BAND6 = BAND1_6;
-const int BAND1L = BAND1_1, BAND2L = BAND1_1 + BAND1_2, BAND3L = BAND1_1 + BAND1_2 + BAND1_3, BAND4L = BAND1_1 + BAND1_2 + BAND1_3 + BAND1_4, BAND5L = BAND1_1 + BAND1_2 + BAND1_3 + BAND1_4 + BAND1_5, BAND6L = BAND1_1 + BAND1_2 + BAND1_3 + BAND1_4 + BAND1_5 + BAND1_6;
+// const int NUM_LEDS = BAND1_1 + BAND1_2 + BAND1_3 + BAND1_4 + BAND1_5 + BAND1_6;
+const int BAND1 = BAND1_1, BAND2 = BAND1_2, BAND3 = BAND1_3, BAND4 = BAND1_4, BAND5 = BAND1_5, BAND6 = BAND1_6, BAND7 = 0;
+// const int BAND1L = BAND1_1, BAND2L = BAND1_1 + BAND1_2, BAND3L = BAND1_1 + BAND1_2 + BAND1_3, BAND4L = BAND1_1 + BAND1_2 + BAND1_3 + BAND1_4, BAND5L = BAND1_1 + BAND1_2 + BAND1_3 + BAND1_4 + BAND1_5, BAND6L = BAND1_1 + BAND1_2 + BAND1_3 + BAND1_4 + BAND1_5 + BAND1_6;
 CHSV myColor = cyellow;
 const int SCULPTURE_ID = 1;
 const char *idleTrack = "DRONE1.WAV"; const char *activeTrack = "RAYGUN.WAV";
-// String idleTrack = "DRONE1.WAV"; String activeTrack = "RAYGUN.WAV";
+CRGB leds0[BAND1_1], leds1[BAND1_2], leds2[BAND1_3], leds3[BAND1_4], leds4[BAND1_5], leds5[BAND1_6], leds6[0];
+
 #elif defined(__SCULPTURE2__)
-const int NUM_LEDS = BAND2_1 + BAND2_2 + BAND2_3 + BAND2_4 + BAND2_5 + BAND2_6;
-const int BAND1 = BAND2_1, BAND2 = BAND2_2, BAND3 = BAND2_3, BAND4 = BAND2_4, BAND5 = BAND2_5, BAND6 = BAND2_6;
-const int BAND1L = BAND2_1, BAND2L = BAND2_1 + BAND2_2, BAND3L = BAND2_1 + BAND2_2 + BAND2_3, BAND4L = BAND2_1 + BAND2_2 + BAND2_3 + BAND2_4, BAND5L = BAND2_1 + BAND2_2 + BAND2_3 + BAND2_4 + BAND2_5, BAND6L = BAND2_1 + BAND2_2 + BAND2_3 + BAND2_4 + BAND2_5 + BAND2_6;
+// const int NUM_LEDS = BAND2_1 + BAND2_2 + BAND2_3 + BAND2_4 + BAND2_5 + BAND2_6 + BAND2_7;
+const int BAND1 = BAND2_1, BAND2 = BAND2_2, BAND3 = BAND2_3, BAND4 = BAND2_4, BAND5 = BAND2_5, BAND6 = BAND2_6, BAND7 = BAND2_7;
+// const int BAND1L = BAND2_1, BAND2L = BAND2_1 + BAND2_2, BAND3L = BAND2_1 + BAND2_2 + BAND2_3, BAND4L = BAND2_1 + BAND2_2 + BAND2_3 + BAND2_4, BAND5L = BAND2_1 + BAND2_2 + BAND2_3 + BAND2_4 + BAND2_5, BAND6L = BAND2_1 + BAND2_2 + BAND2_3 + BAND2_4 + BAND2_5 + BAND2_6, BAND7L = BAND2_1 + BAND2_2 + BAND2_3 + BAND2_4 + BAND2_5 + BAND2_6 + BAND2_7;
 CHSV myColor = cpink;
 const int SCULPTURE_ID = 2;
 const char *idleTrack = "DRONE2.WAV"; const char *activeTrack = "TINKLING.WAV";
-// String idleTrack = "DRONE2.WAV"; String activeTrack = "TINKLING.WAV";
+CRGB leds0[BAND2_1], leds1[BAND2_2], leds2[BAND2_3], leds3[BAND2_4], leds4[BAND2_5], leds5[BAND2_6], leds6[BAND2_7];
+
 #else
 #error "invalid sculpture ID"
 #endif
 
 #define UPDATES_PER_SECOND 100 //speed of light animation
 
-CRGB leds[NUM_LEDS];
-int brightness1, brightness2, brightness3, brightness4, brightness5, brightness6; //band 1 to 6 brightness
+int brightness1, brightness2, brightness3, brightness4, brightness5, brightness6, brightness7; //band 1 to 6 brightness
 int maxBrightLvl = 255;                                                           //variable max brightness
 const int IDLE_MODE = 1, BUTTON_MODE = 2, SLIDER_MODE = 3;
-unsigned int playMode = IDLE_MODE; //1 - idle mode; 2 - button mode; 3 - slider mode
-bool hasplayModeChanged; 
-int activeLedState = 0;            //SCULPTURE 1 : 0 - idle mode, start fade to black 1 - show brightness according to reading, 2 - has completed animations, fade to black and idle
+unsigned int playMode = IDLE_MODE; 
+bool hasplayModeChanged; //for audio track changes
+int activeLedState = 0;            //to track led animaton states, e.g. 0 - idle mode, start fade to black 1 - show brightness according to reading, 2 - has completed animations, fade to black and idle
 bool isMaxBrightness = false;      //to track idle animation direction
-elapsedMillis bandms;              //multiple use time ellapsed tracker
-unsigned int band_delay = BAND_DELAY;
-int readings1[NUMDATA1], readings2[NUMDATA2]; //light values translated from UV readings
+elapsedMillis bandms;              //multiple use time ellapsed counter
+unsigned int band_delay = BAND_DELAY; //speed of fade animation
+int readings1[NUMDATA1], readings2[NUMDATA2]; //brightness values translated from UV readings
 unsigned int readingsCounter;                 //keeps track of indexing the readings array
 unsigned int prevBrightVal, currBrightVal;    //for comparing prev and current values for dimming and brightening
 
@@ -137,7 +138,26 @@ void setup()
 
   delay(2000); //power up safety delay
 
-  FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS);
+  if (SCULPTURE_ID == 1)
+  {
+    FastLED.addLeds<LED_TYPE, LEDPIN0, COLOR_ORDER>(leds0, BAND1);
+    FastLED.addLeds<LED_TYPE, LEDPIN1, COLOR_ORDER>(leds1, BAND2);
+    FastLED.addLeds<LED_TYPE, LEDPIN2, COLOR_ORDER>(leds2, BAND3);
+    FastLED.addLeds<LED_TYPE, LEDPIN3, COLOR_ORDER>(leds3, BAND4);
+    FastLED.addLeds<LED_TYPE, LEDPIN4, COLOR_ORDER>(leds4, BAND5);
+    FastLED.addLeds<LED_TYPE, LEDPIN5, COLOR_ORDER>(leds5, BAND6);
+  }
+  else if (SCULPTURE_ID == 2)   
+  {
+    FastLED.addLeds<LED_TYPE, LEDPIN0, COLOR_ORDER>(leds0, BAND1);
+    FastLED.addLeds<LED_TYPE, LEDPIN1, COLOR_ORDER>(leds1, BAND2);
+    FastLED.addLeds<LED_TYPE, LEDPIN2, COLOR_ORDER>(leds2, BAND3);
+    FastLED.addLeds<LED_TYPE, LEDPIN3, COLOR_ORDER>(leds3, BAND4);
+    FastLED.addLeds<LED_TYPE, LEDPIN4, COLOR_ORDER>(leds4, BAND5);
+    FastLED.addLeds<LED_TYPE, LEDPIN5, COLOR_ORDER>(leds5, BAND6);
+    FastLED.addLeds<LED_TYPE, LEDPIN6, COLOR_ORDER>(leds6, BAND7);
+  }
+
   FastLED.setBrightness(255);
 
   delay(10);
@@ -151,25 +171,7 @@ void loop()
 {
   read_console(); //listen to buttons and sliders
 
-  if (isButtonPressed == true) //process button press
-  {
-    isButtonPressed = false; //listen again for button presses
-    playMode = BUTTON_MODE;
-    hasplayModeChanged = true;//trigger sound change
-    Serial.println("BUTTON MODE");
-
-    activeLedState = 0;          //reset the led if currently active
-    band_delay = BAND_DELAY / 4; //speed up the fade animation
-  }
-  else if (isSliderToggled == true)
-  {
-    isSliderToggled = false; //listen again for slider movement
-    playMode = SLIDER_MODE;
-    hasplayModeChanged = true;//trigger sound change
-    Serial.println("SLIDER MODE");
-
-    band_delay = BAND_DELAY / 4; //speed up the fade animation
-  }
+  check_playMode();
 
   if (playMode == IDLE_MODE)
   {
@@ -184,66 +186,8 @@ void loop()
     toggle_readings(); //toggle according to the slider
   }
 
-  if (playMode == IDLE_MODE)
-  {
-    if (playSdWav1.isPlaying() == false)
-    {
-      playSdWav1.play(idleTrack);
-      delay(10);
-      Serial.print("Start playing ");
-      Serial.println(idleTrack);
-    }
-  }
-  else if (playMode == BUTTON_MODE || playMode == SLIDER_MODE)
-  {
-    if (playSdWav1.isPlaying() == false)
-    {
-      playSdWav1.play(activeTrack);
-      delay(10);
-      Serial.print("Start playing ");
-      Serial.println(activeTrack);
-    }
-  }
-
   FastLED.show();
   FastLED.delay(1000 / UPDATES_PER_SECOND);
 
-  if (playMode == IDLE_MODE)
-  {
-    if (hasplayModeChanged == true && playSdWav1.isPlaying() == true) 
-    {
-      playSdWav1.stop();
-      playSdWav1.play(idleTrack);
-      delay(10);
-      // Serial.print("Start playing ");
-      // Serial.println(idleTrack);
-      hasplayModeChanged = false;
-    } 
-    else if (playSdWav1.isPlaying() == false)
-    {
-      playSdWav1.play(idleTrack);
-      delay(10);
-      // Serial.print("Start playing ");
-      // Serial.println(idleTrack);
-    }
-  }
-  else if ( playMode == BUTTON_MODE || playMode == SLIDER_MODE)
-  {
-    if (hasplayModeChanged == true && playSdWav1.isPlaying() == true) 
-    {
-      playSdWav1.stop();
-      playSdWav1.play(activeTrack);
-      delay(10);
-      // Serial.print("Start playing ");
-      // Serial.println(activeTrack);
-      hasplayModeChanged = false;
-    }
-    else if (playSdWav1.isPlaying() == false)
-    {
-      playSdWav1.play(activeTrack);
-      delay(10);
-      // Serial.print("Start playing ");
-      // Serial.println(activeTrack);
-    }
-  }
+  play_audio(); 
 }
