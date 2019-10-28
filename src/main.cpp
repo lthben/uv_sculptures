@@ -21,13 +21,16 @@
 //-------------------- USER DEFINED SETTINGS --------------------//
 
 
-#define __SCULPTURE2__ //SCULPTURE1 is Ann, SCULPTURE2 is Soh and Suang Suang
+#define __SCULPTURE1__ //SCULPTURE1 is Ann, SCULPTURE2 is Soh and Suang Suang
 
-const int BAND1_1 = 4, BAND1_2 = 4, BAND1_3 = 4, BAND1_4 = 4, BAND1_5 = 4, BAND1_6 = 4; //Sculpture 1: num of pixels per band. 6 bands.
-const int BAND2_1 = 4, BAND2_2 = 4, BAND2_3 = 4, BAND2_4 = 4, BAND2_5 = 4, BAND2_6 = 4, BAND2_7 = 4;//Sculpture 2: num of pixels per band. 7 bands.
+//band 1 is inner most centre where the idle fade animation starts from
+const int BAND1_1 = 5, BAND1_2 = 10, BAND1_3 = 10, BAND1_4 = 40, BAND1_5 = 60, BAND1_6 = 100; //Sculpture 1: num of pixels per band. 6 bands.
+const int BAND2_1 = 30, BAND2_2 = 30, BAND2_3 = 30, BAND2_4 = 20, BAND2_5 = 20, BAND2_6 = 20, BAND2_7 = 20;//Sculpture 2: num of pixels per band. 7 bands.
 
 const int NUMDATA1 = 5, NUMDATA2 = 8; //number of data points for each sculpture
-const float ann_readings[NUMDATA1] = {2.94, 4.27, 4.09, 0.42, 8.0};
+// const float ann_readings[NUMDATA1] = {2.94, 4.27, 4.09, 0.42, 8.0}; //actual values
+const float ann_readings[NUMDATA1] = {1.0, 8.0, 1.0, 8.0, 1.0}; //test values
+
 // const float sohsuang_readings[NUMDATA2] = {0.13, 0.06, 1.6, 4.38, 7.0, 1.51, 3.8, 0.04}; //actual values
 const float sohsuang_readings[NUMDATA2] = {1.0, 7.0, 1.0, 7.0, 1.0, 7.0, 1.0, 7.0}; //test values
 
@@ -175,7 +178,8 @@ void loop()
 
   if (playMode == IDLE_MODE)
   {
-    fade_animation();
+    if (SCULPTURE_ID == 1) sixband_fade_animation();
+    else sevenband_fade_animation();
   }
   else if (playMode == BUTTON_MODE)
   {
