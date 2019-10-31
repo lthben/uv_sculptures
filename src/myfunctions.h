@@ -65,33 +65,45 @@ void read_console()
 --------------------------------------------------------------------------------*/
 void fade_all()
 {
-  for (int i = 0; i < BAND1; i++)
+  for (int i = 0; i < n1; i++)
   {
     leds0[i].fadeToBlackBy(8);
   }
-  for (int i = 0; i < BAND2; i++)
+  for (int i = 0; i < n2; i++)
   {
     leds1[i].fadeToBlackBy(8);
   }
-  for (int i = 0; i < BAND3; i++)
+  for (int i = 0; i < n3; i++)
   {
     leds2[i].fadeToBlackBy(8);
   }
-  for (int i = 0; i < BAND4; i++)
+  for (int i = 0; i < n4; i++)
   {
     leds3[i].fadeToBlackBy(8);
   }
-  for (int i = 0; i < BAND5; i++)
+  for (int i = 0; i < n5; i++)
   {
     leds4[i].fadeToBlackBy(8);
   }
-  for (int i = 0; i < BAND6; i++)
+  for (int i = 0; i < n6; i++)
   {
     leds5[i].fadeToBlackBy(8);
   }
-  for (int i = 0; i < BAND7; i++)
+  for (int i = 0; i < n7; i++)
   {
     leds6[i].fadeToBlackBy(8);
+  }
+  for (int i = 0; i < n8; i++)
+  {
+    leds7[i].fadeToBlackBy(8);
+  }
+  for (int i = 0; i < n9; i++)
+  {
+    leds8[i].fadeToBlackBy(8);
+  }
+  for (int i = 0; i < n10; i++)
+  {
+    leds9[i].fadeToBlackBy(8);
   }
 }
 
@@ -102,33 +114,45 @@ void set_all_to_brightLevel(int brightLvl)
 {
   myColor.val = brightLvl;
 
-  for (int i = 0; i < BAND1; i++)
+  for (int i = 0; i < n1; i++)
   {
     leds0[i] = myColor;
   }
-  for (int i = 0; i < BAND2; i++)
+  for (int i = 0; i < n2; i++)
   {
     leds1[i] = myColor;
   }
-  for (int i = 0; i < BAND3; i++)
+  for (int i = 0; i < n3; i++)
   {
     leds2[i] = myColor;
   }
-  for (int i = 0; i < BAND4; i++)
+  for (int i = 0; i < n4; i++)
   {
     leds3[i] = myColor;
   }
-  for (int i = 0; i < BAND5; i++)
+  for (int i = 0; i < n5; i++)
   {
     leds4[i] = myColor;
   }
-  for (int i = 0; i < BAND6; i++)
+  for (int i = 0; i < n6; i++)
   {
     leds5[i] = myColor;
   }
-  for (int i = 0; i < BAND7; i++)
+  for (int i = 0; i < n7; i++)
   {
     leds6[i] = myColor;
+  }
+  for (int i = 0; i < n8; i++)
+  {
+    leds7[i] = myColor;
+  }
+  for (int i = 0; i < n9; i++)
+  {
+    leds8[i] = myColor;
+  }
+  for (int i = 0; i < n10; i++)
+  {
+    leds9[i] = myColor;
   }
 }
 
@@ -139,19 +163,15 @@ bool has_all_fade()
 {
   if (leds0[0].getAverageLight() == 0)
   {
-    if (leds1[0].getAverageLight() == 0)
+    if (leds2[0].getAverageLight() == 0)
     {
-      if (leds2[0].getAverageLight() == 0)
+      if (leds4[0].getAverageLight() == 0)
       {
-        if (leds3[0].getAverageLight() == 0)
+        if (leds6[0].getAverageLight() == 0)
         {
-          if (leds4[0].getAverageLight() == 0)
+          if (leds8[0].getAverageLight() == 0)
           {
-            if (leds5[0].getAverageLight() == 0)
-            {
-              return true;
-            }
-            return false;
+            return true;
           }
           return false;
         }
@@ -194,7 +214,7 @@ void sixband_fade_animation()
   {
     int brightlevel = get_brightness(brightness1);
     myColor.val = brightness1 = brightlevel;
-    for (int i = 0; i < BAND1; i++)
+    for (int i = 0; i < n1; i++)
     {
       leds0[i] = myColor;
     }
@@ -203,9 +223,17 @@ void sixband_fade_animation()
   {
     int brightlevel = get_brightness(brightness6);
     myColor.val = brightness6 = brightlevel;
-    for (int i = 0; i < BAND6; i++)
+    for (int i = 0; i < n8; i++)
     {
-      leds5[i] = myColor;
+      leds7[i] = myColor;
+    }
+    for (int i = 0; i < n9; i++)
+    {
+      leds8[i] = myColor;
+    }
+    for (int i = 0; i < n10; i++)
+    {
+      leds9[i] = myColor;
     }
   }
 
@@ -215,7 +243,7 @@ void sixband_fade_animation()
     {
       int brightlevel = get_brightness(brightness2);
       myColor.val = brightness2 = brightlevel;
-      for (int i = 0; i < BAND2; i++)
+      for (int i = 0; i < n2; i++)
       {
         leds1[i] = myColor;
       }
@@ -224,9 +252,13 @@ void sixband_fade_animation()
     {
       int brightlevel = get_brightness(brightness5);
       myColor.val = brightness5 = brightlevel;
-      for (int i = 0; i < BAND5; i++)
+      for (int i = 0; i < n6; i++)
       {
-        leds4[i] = myColor;
+        leds5[i] = myColor;
+      }
+      for (int i = 0; i < n7; i++)
+      {
+        leds6[i] = myColor;
       }
     }
   }
@@ -237,7 +269,7 @@ void sixband_fade_animation()
     {
       int brightlevel = get_brightness(brightness3);
       myColor.val = brightness3 = brightlevel;
-      for (int i = 0; i < BAND3; i++)
+      for (int i = 0; i < n3; i++)
       {
         leds2[i] = myColor;
       }
@@ -246,9 +278,13 @@ void sixband_fade_animation()
     {
       int brightlevel = get_brightness(brightness4);
       myColor.val = brightness4 = brightlevel;
-      for (int i = 0; i < BAND4; i++)
+      for (int i = 0; i < n4; i++)
       {
         leds3[i] = myColor;
+      }
+      for (int i = 0; i < n5; i++)
+      {
+        leds4[i] = myColor;
       }
     }
   }
@@ -259,16 +295,20 @@ void sixband_fade_animation()
     {
       int brightlevel = get_brightness(brightness4);
       myColor.val = brightness4 = brightlevel;
-      for (int i = 0; i < BAND4; i++)
+      for (int i = 0; i < n4; i++)
       {
         leds3[i] = myColor;
+      }
+      for (int i = 0; i < n5; i++)
+      {
+        leds4[i] = myColor;
       }
     }
     else
     {
       int brightlevel = get_brightness(brightness3);
       myColor.val = brightness3 = brightlevel;
-      for (int i = 0; i < BAND3; i++)
+      for (int i = 0; i < n3; i++)
       {
         leds2[i] = myColor;
       }
@@ -281,16 +321,20 @@ void sixband_fade_animation()
     {
       int brightlevel = get_brightness(brightness5);
       myColor.val = brightness5 = brightlevel;
-      for (int i = 0; i < BAND5; i++)
+      for (int i = 0; i < n6; i++)
       {
-        leds4[i] = myColor;
+        leds5[i] = myColor;
+      }
+      for (int i = 0; i < n7; i++)
+      {
+        leds6[i] = myColor;
       }
     }
     else
     {
       int brightlevel = get_brightness(brightness2);
       myColor.val = brightness2 = brightlevel;
-      for (int i = 0; i < BAND2; i++)
+      for (int i = 0; i < n2; i++)
       {
         leds1[i] = myColor;
       }
@@ -303,9 +347,17 @@ void sixband_fade_animation()
     {
       int brightlevel = get_brightness(brightness6);
       myColor.val = brightness6 = brightlevel;
-      for (int i = 0; i < BAND6; i++)
+      for (int i = 0; i < n8; i++)
       {
-        leds5[i] = myColor;
+        leds7[i] = myColor;
+      }
+      for (int i = 0; i < n9; i++)
+      {
+        leds8[i] = myColor;
+      }
+      for (int i = 0; i < n10; i++)
+      {
+        leds9[i] = myColor;
       }
       if (brightlevel == maxBrightLvl)
       {
@@ -317,7 +369,7 @@ void sixband_fade_animation()
     {
       int brightlevel = get_brightness(brightness1);
       myColor.val = brightness1 = brightlevel;
-      for (int i = 0; i < BAND1; i++)
+      for (int i = 0; i < n1; i++)
       {
         leds0[i] = myColor;
       }
@@ -339,18 +391,26 @@ void sevenband_fade_animation()
   {
     int brightlevel = get_brightness(brightness1);
     myColor.val = brightness1 = brightlevel;
-    for (int i = 0; i < BAND1; i++)
+    for (int i = 0; i < n1; i++)
     {
       leds0[i] = myColor;
+    }
+    for (int i = 0; i < n2; i++)
+    {
+      leds1[i] = myColor;
+    }
+    for (int i = 0; i < n3; i++)
+    {
+      leds2[i] = myColor;
     }
   }
   else
   {
     int brightlevel = get_brightness(brightness7);
     myColor.val = brightness7 = brightlevel;
-    for (int i = 0; i < BAND7; i++)
+    for (int i = 0; i < n9; i++)
     {
-      leds6[i] = myColor;
+      leds8[i] = myColor;
     }
   }
 
@@ -360,18 +420,18 @@ void sevenband_fade_animation()
     {
       int brightlevel = get_brightness(brightness2);
       myColor.val = brightness2 = brightlevel;
-      for (int i = 0; i < BAND2; i++)
+      for (int i = 0; i < n4; i++)
       {
-        leds1[i] = myColor;
+        leds3[i] = myColor;
       }
     }
     else
     {
       int brightlevel = get_brightness(brightness6);
       myColor.val = brightness6 = brightlevel;
-      for (int i = 0; i < BAND6; i++)
+      for (int i = 0; i < n8; i++)
       {
-        leds5[i] = myColor;
+        leds7[i] = myColor;
       }
     }
   }
@@ -382,41 +442,29 @@ void sevenband_fade_animation()
     {
       int brightlevel = get_brightness(brightness3);
       myColor.val = brightness3 = brightlevel;
-      for (int i = 0; i < BAND3; i++)
+      for (int i = 0; i < n5; i++)
       {
-        leds2[i] = myColor;
+        leds4[i] = myColor;
       }
     }
     else
     {
       int brightlevel = get_brightness(brightness5);
       myColor.val = brightness5 = brightlevel;
-      for (int i = 0; i < BAND5; i++)
+      for (int i = 0; i < n7; i++)
       {
-        leds4[i] = myColor;
+        leds6[i] = myColor;
       }
     }
   }
 
   if (bandms > band_delay * 3)
-  {
-    if (!isMaxBrightness)
+  { //both directions are band 4
+    int brightlevel = get_brightness(brightness4);
+    myColor.val = brightness4 = brightlevel;
+    for (int i = 0; i < n6; i++)
     {
-      int brightlevel = get_brightness(brightness4);
-      myColor.val = brightness4 = brightlevel;
-      for (int i = 0; i < BAND4; i++)
-      {
-        leds3[i] = myColor;
-      }
-    }
-    else
-    {
-      int brightlevel = get_brightness(brightness4);
-      myColor.val = brightness4 = brightlevel;
-      for (int i = 0; i < BAND4; i++)
-      {
-        leds3[i] = myColor;
-      }
+      leds5[i] = myColor;
     }
   }
 
@@ -426,18 +474,18 @@ void sevenband_fade_animation()
     {
       int brightlevel = get_brightness(brightness5);
       myColor.val = brightness5 = brightlevel;
-      for (int i = 0; i < BAND5; i++)
+      for (int i = 0; i < n7; i++)
       {
-        leds4[i] = myColor;
+        leds6[i] = myColor;
       }
     }
     else
     {
       int brightlevel = get_brightness(brightness3);
       myColor.val = brightness3 = brightlevel;
-      for (int i = 0; i < BAND3; i++)
+      for (int i = 0; i < n5; i++)
       {
-        leds2[i] = myColor;
+        leds4[i] = myColor;
       }
     }
   }
@@ -448,18 +496,18 @@ void sevenband_fade_animation()
     {
       int brightlevel = get_brightness(brightness6);
       myColor.val = brightness6 = brightlevel;
-      for (int i = 0; i < BAND6; i++)
+      for (int i = 0; i < n8; i++)
       {
-        leds5[i] = myColor;
+        leds7[i] = myColor;
       }
     }
     else
     {
       int brightlevel = get_brightness(brightness2);
       myColor.val = brightness2 = brightlevel;
-      for (int i = 0; i < BAND2; i++)
+      for (int i = 0; i < n4; i++)
       {
-        leds1[i] = myColor;
+        leds3[i] = myColor;
       }
     }
   }
@@ -470,9 +518,9 @@ void sevenband_fade_animation()
     {
       int brightlevel = get_brightness(brightness7);
       myColor.val = brightness7 = brightlevel;
-      for (int i = 0; i < BAND7; i++)
+      for (int i = 0; i < n9; i++)
       {
-        leds6[i] = myColor;
+        leds8[i] = myColor;
       }
       if (brightlevel == maxBrightLvl)
       {
@@ -484,9 +532,17 @@ void sevenband_fade_animation()
     {
       int brightlevel = get_brightness(brightness1);
       myColor.val = brightness1 = brightlevel;
-      for (int i = 0; i < BAND1; i++)
+      for (int i = 0; i < n1; i++)
       {
         leds0[i] = myColor;
+      }
+      for (int i = 0; i < n2; i++)
+      {
+        leds1[i] = myColor;
+      }
+      for (int i = 0; i < n3; i++)
+      {
+        leds2[i] = myColor;
       }
       if (brightlevel == 0)
       {

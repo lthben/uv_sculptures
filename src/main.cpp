@@ -20,12 +20,16 @@
 
 //-------------------- USER DEFINED SETTINGS --------------------//
 
-
-#define __SCULPTURE1__ //SCULPTURE1 is Ann, SCULPTURE2 is Soh and Suang Suang
+//SCULPTURE1 (curved light strips) is Ann, SCULPTURE2 (straight light strips) is Soh and Suang Suang
+//SCULPTURE 1 has 6 bands. SCULPTURE 2 has 7 bands. Some of the bands have individual light strips and corresponding data pins due to soldering connection issues, 
+//instead of having one long continuous strip as would be the ideal case. 
+#define __SCULPTURE1__ 
 
 //band 1 is inner most centre where the idle fade animation starts from
-const int BAND1_1 = 5, BAND1_2 = 10, BAND1_3 = 10, BAND1_4 = 40, BAND1_5 = 60, BAND1_6 = 100; //Sculpture 1: num of pixels per band. 6 bands.
-const int BAND2_1 = 30, BAND2_2 = 30, BAND2_3 = 30, BAND2_4 = 20, BAND2_5 = 20, BAND2_6 = 20, BAND2_7 = 20;//Sculpture 2: num of pixels per band. 7 bands.
+//number of pixels (every 10cm) for each data pin controlled led strip
+//number system is NX_BX_SX where NX is SCULPTURE ID number, BX is band number and SX is the individual strip number within the band
+const int p1_1_x = 3, p1_2_x = 6, p1_3_x = 10, p1_4_1 = 14, p1_4_2 = 14, p1_5_1 = 18, p1_5_2 = 18, p1_6_1 = 22, p1_6_2 = 22, p1_6_3 = 22; //SCULPTURE1. 6 bands. 10 strips.
+const int p2_1_1 = 9, p2_1_2 = 9, p2_1_3 = 9, p2_2_x = 20, p2_3_x = 22, p2_4_x = 11, p2_5_x = 11, p2_6_x = 11, p2_7_x = 11;//Sculpture 2. 7 bands. 9 strips.
 
 const int NUMDATA1 = 5, NUMDATA2 = 8; //number of data points for each sculpture
 // const float ann_readings[NUMDATA1] = {2.94, 4.27, 4.09, 0.42, 8.0}; //actual values
@@ -39,7 +43,6 @@ const int SLIDER_WAIT = 3000; //ms idle for slider movement before IDLE_MODE kic
 
 CHSV cyellow(64, 255, 255); //sculpture 1 colour
 CHSV cpink(224, 255, 255); //sculpture 2 colour
-
 
 //-------------------- Audio --------------------//
 
@@ -60,7 +63,7 @@ float vol = 0.5; //master volume gain 0.0 - 1.0
 
 //-------------------- Buttons and Sliders --------------------//
 
-const int buttonPin = 8;
+const int buttonPin = 19;
 const int sliderPin = A6;//A8 does not work for some strange reason. Causes sound to not be heard even when playing.
 Bounce myButton = Bounce(buttonPin, 15); // 15 = 15 ms debounce time
 
@@ -70,28 +73,27 @@ unsigned int sliderPosIndex, prevSliderPosIndex, currSliderPosIndex; //0 - 4 for
 bool isButtonPressed, isSliderToggled;
 
 //-------------------- Light --------------------//
-const int LEDPIN0 = 0, LEDPIN1 = 1, LEDPIN2 = 2, LEDPIN3 = 3, LEDPIN4 = 4, LEDPIN5 = 5, LEDPIN6 = 6;
+const int LEDPIN0 = 0, LEDPIN1 = 1, LEDPIN2 = 2, LEDPIN3 = 3, LEDPIN4 = 4, LEDPIN5 = 5, LEDPIN6 = 6, LEDPIN7 = 8, LEDPIN8 = 9, LEDPIN9 = 15, LEDPIN10 = 16; //mapping for 11 data pins 
 
 #define LED_TYPE UCS1903
 #define COLOR_ORDER GRB //Yes! GRB!
 
+// const int p1_1_x = 3, p1_2_x = 6, p1_3_x = 10, p1_4_1 = 14, p1_4_2 = 14, p1_5_1 = 18, p1_5_2 = 18, p1_6_1 = 22, p1_6_2 = 22, p1_6_3 = 22; //SCULPTURE1. 6 bands. 10 strips.
+// const int p2_1_1 = 9, p2_1_2 = 9, p2_1_3 = 9, p2_2_x = 20, p2_3_x = 22, p2_4_x = 11, p2_5_x = 11, p2_6_x = 11, p2_7_x = 11;//Sculpture 2. 7 bands. 9 strips.
+
 #if defined(__SCULPTURE1__)
-// const int NUM_LEDS = BAND1_1 + BAND1_2 + BAND1_3 + BAND1_4 + BAND1_5 + BAND1_6;
-const int BAND1 = BAND1_1, BAND2 = BAND1_2, BAND3 = BAND1_3, BAND4 = BAND1_4, BAND5 = BAND1_5, BAND6 = BAND1_6, BAND7 = 0;
-// const int BAND1L = BAND1_1, BAND2L = BAND1_1 + BAND1_2, BAND3L = BAND1_1 + BAND1_2 + BAND1_3, BAND4L = BAND1_1 + BAND1_2 + BAND1_3 + BAND1_4, BAND5L = BAND1_1 + BAND1_2 + BAND1_3 + BAND1_4 + BAND1_5, BAND6L = BAND1_1 + BAND1_2 + BAND1_3 + BAND1_4 + BAND1_5 + BAND1_6;
 CHSV myColor = cyellow;
 const int SCULPTURE_ID = 1;
 const char *idleTrack = "DRONE1.WAV"; const char *activeTrack = "RAYGUN.WAV";
-CRGB leds0[BAND1_1], leds1[BAND1_2], leds2[BAND1_3], leds3[BAND1_4], leds4[BAND1_5], leds5[BAND1_6], leds6[0];
+CRGB leds0[p1_1_x], leds1[p1_2_x], leds2[p1_3_x], leds3[p1_4_1], leds4[p1_4_2], leds5[p1_5_1], leds6[p1_5_2], leds7[p1_6_1], leds8[p1_6_2], leds9[p1_6_3];
+const int n1 = p1_1_x, n2 = p1_2_x, n3 = p1_3_x, n4 = p1_4_1, n5 = p1_4_2, n6 = p1_5_1, n7 = p1_5_2, n8 = p1_6_1, n9 = p1_6_2, n10 = p1_6_3; //for common code for both sculptures
 
 #elif defined(__SCULPTURE2__)
-// const int NUM_LEDS = BAND2_1 + BAND2_2 + BAND2_3 + BAND2_4 + BAND2_5 + BAND2_6 + BAND2_7;
-const int BAND1 = BAND2_1, BAND2 = BAND2_2, BAND3 = BAND2_3, BAND4 = BAND2_4, BAND5 = BAND2_5, BAND6 = BAND2_6, BAND7 = BAND2_7;
-// const int BAND1L = BAND2_1, BAND2L = BAND2_1 + BAND2_2, BAND3L = BAND2_1 + BAND2_2 + BAND2_3, BAND4L = BAND2_1 + BAND2_2 + BAND2_3 + BAND2_4, BAND5L = BAND2_1 + BAND2_2 + BAND2_3 + BAND2_4 + BAND2_5, BAND6L = BAND2_1 + BAND2_2 + BAND2_3 + BAND2_4 + BAND2_5 + BAND2_6, BAND7L = BAND2_1 + BAND2_2 + BAND2_3 + BAND2_4 + BAND2_5 + BAND2_6 + BAND2_7;
 CHSV myColor = cpink;
 const int SCULPTURE_ID = 2;
 const char *idleTrack = "DRONE2.WAV"; const char *activeTrack = "TINKLING.WAV";
-CRGB leds0[BAND2_1], leds1[BAND2_2], leds2[BAND2_3], leds3[BAND2_4], leds4[BAND2_5], leds5[BAND2_6], leds6[BAND2_7];
+CRGB leds0[p2_1_1], leds1[p2_1_2], leds2[p2_1_3], leds3[p2_2_x], leds4[p2_3_x], leds5[p2_4_x], leds6[p2_5_x], leds7[p2_6_x], leds8[p2_7_x], leds9[0]; //need to define "leds9[]" else cannot compile
+const int n1 = p2_1_1, n2 = p2_1_2, n3 = p2_1_3, n4 = p2_2_x, n5 = p2_3_x, n6 = p2_4_x, n7 = p2_5_x, n8 = p2_6_x, n9 = p2_7_x, n10 = 0; //for common code for both sculptures
 
 #else
 #error "invalid sculpture ID"
@@ -99,7 +101,7 @@ CRGB leds0[BAND2_1], leds1[BAND2_2], leds2[BAND2_3], leds3[BAND2_4], leds4[BAND2
 
 #define UPDATES_PER_SECOND 100 //speed of light animation
 
-int brightness1, brightness2, brightness3, brightness4, brightness5, brightness6, brightness7; //band 1 to 6 brightness
+int brightness1, brightness2, brightness3, brightness4, brightness5, brightness6, brightness7; //band 1 to 7 brightness
 int maxBrightLvl = 255;                                                           //variable max brightness
 const int IDLE_MODE = 1, BUTTON_MODE = 2, SLIDER_MODE = 3;
 unsigned int playMode = IDLE_MODE; 
@@ -143,22 +145,29 @@ void setup()
 
   if (SCULPTURE_ID == 1)
   {
-    FastLED.addLeds<LED_TYPE, LEDPIN0, COLOR_ORDER>(leds0, BAND1);
-    FastLED.addLeds<LED_TYPE, LEDPIN1, COLOR_ORDER>(leds1, BAND2);
-    FastLED.addLeds<LED_TYPE, LEDPIN2, COLOR_ORDER>(leds2, BAND3);
-    FastLED.addLeds<LED_TYPE, LEDPIN3, COLOR_ORDER>(leds3, BAND4);
-    FastLED.addLeds<LED_TYPE, LEDPIN4, COLOR_ORDER>(leds4, BAND5);
-    FastLED.addLeds<LED_TYPE, LEDPIN5, COLOR_ORDER>(leds5, BAND6);
+    FastLED.addLeds<LED_TYPE, LEDPIN0, COLOR_ORDER>(leds0, p1_1_x);
+    FastLED.addLeds<LED_TYPE, LEDPIN1, COLOR_ORDER>(leds1, p1_2_x);
+    FastLED.addLeds<LED_TYPE, LEDPIN2, COLOR_ORDER>(leds2, p1_3_x);
+    FastLED.addLeds<LED_TYPE, LEDPIN3, COLOR_ORDER>(leds3, p1_4_1);
+    FastLED.addLeds<LED_TYPE, LEDPIN4, COLOR_ORDER>(leds4, p1_4_2);
+    FastLED.addLeds<LED_TYPE, LEDPIN5, COLOR_ORDER>(leds5, p1_5_1);
+    FastLED.addLeds<LED_TYPE, LEDPIN6, COLOR_ORDER>(leds6, p1_5_2);
+    FastLED.addLeds<LED_TYPE, LEDPIN7, COLOR_ORDER>(leds7, p1_6_1);
+    FastLED.addLeds<LED_TYPE, LEDPIN8, COLOR_ORDER>(leds8, p1_6_2);
+    FastLED.addLeds<LED_TYPE, LEDPIN9, COLOR_ORDER>(leds9, p1_6_3);
   }
   else if (SCULPTURE_ID == 2)   
   {
-    FastLED.addLeds<LED_TYPE, LEDPIN0, COLOR_ORDER>(leds0, BAND1);
-    FastLED.addLeds<LED_TYPE, LEDPIN1, COLOR_ORDER>(leds1, BAND2);
-    FastLED.addLeds<LED_TYPE, LEDPIN2, COLOR_ORDER>(leds2, BAND3);
-    FastLED.addLeds<LED_TYPE, LEDPIN3, COLOR_ORDER>(leds3, BAND4);
-    FastLED.addLeds<LED_TYPE, LEDPIN4, COLOR_ORDER>(leds4, BAND5);
-    FastLED.addLeds<LED_TYPE, LEDPIN5, COLOR_ORDER>(leds5, BAND6);
-    FastLED.addLeds<LED_TYPE, LEDPIN6, COLOR_ORDER>(leds6, BAND7);
+    FastLED.addLeds<LED_TYPE, LEDPIN0, COLOR_ORDER>(leds0, p2_1_1);
+    FastLED.addLeds<LED_TYPE, LEDPIN1, COLOR_ORDER>(leds1, p2_1_2);
+    FastLED.addLeds<LED_TYPE, LEDPIN2, COLOR_ORDER>(leds2, p2_1_3);
+    FastLED.addLeds<LED_TYPE, LEDPIN3, COLOR_ORDER>(leds3, p2_2_x);
+    FastLED.addLeds<LED_TYPE, LEDPIN4, COLOR_ORDER>(leds4, p2_3_x);
+    FastLED.addLeds<LED_TYPE, LEDPIN5, COLOR_ORDER>(leds5, p2_4_x);
+    FastLED.addLeds<LED_TYPE, LEDPIN6, COLOR_ORDER>(leds6, p2_5_x);
+    FastLED.addLeds<LED_TYPE, LEDPIN7, COLOR_ORDER>(leds7, p2_6_x);
+    FastLED.addLeds<LED_TYPE, LEDPIN8, COLOR_ORDER>(leds8, p2_7_x);
+    FastLED.addLeds<LED_TYPE, LEDPIN8, COLOR_ORDER>(leds9, 0); //need to define, else cannot compile
   }
 
   FastLED.setBrightness(255);
