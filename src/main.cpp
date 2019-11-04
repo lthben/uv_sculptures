@@ -21,9 +21,11 @@
 //-------------------- USER DEFINED SETTINGS --------------------//
 
 //SCULPTURE1 (curved light strips) is Ann, SCULPTURE2 (straight light strips) is Soh and Suang Suang
-//SCULPTURE 1 has 6 bands. SCULPTURE 2 has 7 bands. Some of the bands have individual light strips and corresponding data pins due to soldering connection issues, 
-//instead of having one long continuous strip as would be the ideal case. 
+//SCULPTURE 1 has 10 led strips. SCULPTURE 2 has 9.
+//SCULPTURE 1 uses a slider. 2 uses a knob
+
 #define __SCULPTURE1__ 
+// #define __SCULPTURE2__ 
 
 //band 1 is inner most centre where the idle fade animation starts from
 //number of pixels (every 10cm) for each data pin controlled led strip
@@ -59,12 +61,12 @@ AudioControlSGTL5000 sgtl5000_1; //xy=615,336
 #define SDCARD_MOSI_PIN 7
 #define SDCARD_SCK_PIN 14
 
-float vol = 0.5; //master volume gain 0.0 - 1.0
+float vol = 0.7; //master volume gain 0.0 - 1.0
 
 //-------------------- Buttons and Sliders --------------------//
 
 const int buttonPin = 19;
-const int sliderPin = A6;//A8 does not work for some strange reason. Causes sound to not be heard even when playing.
+const int sliderPin = A6;//A6 is 20. A8 or 22 does not work for some strange reason. Causes sound to not be heard even when playing.
 Bounce myButton = Bounce(buttonPin, 15); // 15 = 15 ms debounce time
 
 unsigned int sliderVal, prevSliderVal, currSliderVal;
@@ -73,13 +75,10 @@ unsigned int sliderPosIndex, prevSliderPosIndex, currSliderPosIndex; //0 - 4 for
 bool isButtonPressed, isSliderToggled;
 
 //-------------------- Light --------------------//
-const int LEDPIN0 = 0, LEDPIN1 = 1, LEDPIN2 = 2, LEDPIN3 = 3, LEDPIN4 = 4, LEDPIN5 = 5, LEDPIN6 = 6, LEDPIN7 = 8, LEDPIN8 = 9, LEDPIN9 = 15, LEDPIN10 = 16; //mapping for 11 data pins 
+const int LEDPIN0 = 0, LEDPIN1 = 1, LEDPIN2 = 2, LEDPIN3 = 3, LEDPIN4 = 4, LEDPIN5 = 5, LEDPIN6 = 6, LEDPIN7 = 8, LEDPIN8 = 13, LEDPIN9 = 16, LEDPIN10 = 17; //mapping for 11 data pins. Pins 9, 11, 12, 15 cannot be used. 
 
 #define LED_TYPE UCS1903
 #define COLOR_ORDER GRB //Yes! GRB!
-
-// const int p1_1_x = 3, p1_2_x = 6, p1_3_x = 10, p1_4_1 = 14, p1_4_2 = 14, p1_5_1 = 18, p1_5_2 = 18, p1_6_1 = 22, p1_6_2 = 22, p1_6_3 = 22; //SCULPTURE1. 6 bands. 10 strips.
-// const int p2_1_1 = 9, p2_1_2 = 9, p2_1_3 = 9, p2_2_x = 20, p2_3_x = 22, p2_4_x = 11, p2_5_x = 11, p2_6_x = 11, p2_7_x = 11;//Sculpture 2. 7 bands. 9 strips.
 
 #if defined(__SCULPTURE1__)
 CHSV myColor = cyellow;
@@ -142,6 +141,7 @@ void setup()
   }
 
   delay(2000); //power up safety delay
+
 
   if (SCULPTURE_ID == 1)
   {

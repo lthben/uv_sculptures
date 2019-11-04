@@ -720,16 +720,16 @@ void play_audio()
       playSdWav1.stop();
       playSdWav1.play(idleTrack);
       delay(10);
-      // Serial.print("Start playing ");
-      // Serial.println(idleTrack);
+      Serial.print("Start playing ");
+      Serial.println(idleTrack);
       hasplayModeChanged = false;
     }
     else if (playSdWav1.isPlaying() == false)
     {
       playSdWav1.play(idleTrack);
       delay(10);
-      // Serial.print("Start playing ");
-      // Serial.println(idleTrack);
+      Serial.print("Start playing ");
+      Serial.println(idleTrack);
     }
   }
   else if (playMode == BUTTON_MODE || playMode == SLIDER_MODE)
@@ -739,16 +739,16 @@ void play_audio()
       playSdWav1.stop();
       playSdWav1.play(activeTrack);
       delay(10);
-      // Serial.print("Start playing ");
-      // Serial.println(activeTrack);
+      Serial.print("Start playing ");
+      Serial.println(activeTrack);
       hasplayModeChanged = false;
     }
     else if (playSdWav1.isPlaying() == false)
     {
       playSdWav1.play(activeTrack);
       delay(10);
-      // Serial.print("Start playing ");
-      // Serial.println(activeTrack);
+      Serial.print("Start playing ");
+      Serial.println(activeTrack);
     }
   }
 }
