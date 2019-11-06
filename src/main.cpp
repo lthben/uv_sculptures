@@ -29,7 +29,8 @@
 
 /* ----------------------------- PIN ASSIGNMENT -------------------------------------
 mapping for 11 data pins. Pins 9, 11, 12, 15 cannot be used as sound will not play. 
-TBD: can 13, 16, 17, 18, 21 to 23 be used?
+TBD: can 13, 16, 17, 18, 21 to 23 be used? -> 13 cannot light up led
+HACK: LEDPIN9 is coupled to LEDPIN8. Animation is slow enough not to notice that LEDPIN8 and LEDPIN9 are actually the same brightness
 7, 10 and 14 used by SD card
 19 and 20 used by pot and button
 */
@@ -42,11 +43,11 @@ const int p1_1_x = 3, p1_2_x = 6, p1_3_x = 10, p1_4_1 = 14, p1_4_2 = 14, p1_5_1 
 const int p2_1_1 = 9, p2_1_2 = 9, p2_1_3 = 9, p2_2_x = 20, p2_3_x = 22, p2_4_x = 11, p2_5_x = 11, p2_6_x = 11, p2_7_x = 11;//Sculpture 2. 7 bands. 9 strips.
 
 const int NUMDATA1 = 5, NUMDATA2 = 8; //number of data points for each sculpture
-// const float ann_readings[NUMDATA1] = {2.94, 4.27, 4.09, 0.42, 8.0}; //actual values
-const float ann_readings[NUMDATA1] = {1.0, 8.0, 1.0, 8.0, 1.0}; //test values
+const float ann_readings[NUMDATA1] = {2.94, 4.27, 4.09, 0.42, 8.0}; //actual values
+// const float ann_readings[NUMDATA1] = {1.0, 8.0, 1.0, 8.0, 1.0}; //test values
 
-// const float sohsuang_readings[NUMDATA2] = {0.13, 0.06, 1.6, 4.38, 7.0, 1.51, 3.8, 0.04}; //actual values
-const float sohsuang_readings[NUMDATA2] = {1.0, 7.0, 1.0, 7.0, 1.0, 7.0, 1.0, 7.0}; //test values
+const float sohsuang_readings[NUMDATA2] = {0.13, 0.06, 1.6, 4.38, 7.0, 1.51, 3.8, 0.04}; //actual values
+// const float sohsuang_readings[NUMDATA2] = {1.0, 7.0, 1.0, 7.0, 1.0, 7.0, 1.0, 7.0}; //test values
 
 const int BAND_DELAY = 500;   //ms delay between each band lightup
 const int SLIDER_WAIT = 3000; //ms idle for slider movement before IDLE_MODE kicks in
