@@ -27,6 +27,14 @@
 #define __SCULPTURE1__ 
 // #define __SCULPTURE2__ 
 
+/* ----------------------------- PIN ASSIGNMENT -------------------------------------
+mapping for 11 data pins. Pins 9, 11, 12, 15 cannot be used as sound will not play. 
+TBD: can 13, 16, 17, 18, 21 to 23 be used?
+7, 10 and 14 used by SD card
+19 and 20 used by pot and button
+*/
+const int LEDPIN0 = 0, LEDPIN1 = 1, LEDPIN2 = 2, LEDPIN3 = 3, LEDPIN4 = 4, LEDPIN5 = 5, LEDPIN6 = 6, LEDPIN7 = 8, LEDPIN8 = 13, LEDPIN9 = 16, LEDPIN10 = 17; 
+
 //band 1 is inner most centre where the idle fade animation starts from
 //number of pixels (every 10cm) for each data pin controlled led strip
 //number system is NX_BX_SX where NX is SCULPTURE ID number, BX is band number and SX is the individual strip number within the band
@@ -75,7 +83,6 @@ unsigned int sliderPosIndex, prevSliderPosIndex, currSliderPosIndex; //0 - 4 for
 bool isButtonPressed, isSliderToggled;
 
 //-------------------- Light --------------------//
-const int LEDPIN0 = 0, LEDPIN1 = 1, LEDPIN2 = 2, LEDPIN3 = 3, LEDPIN4 = 4, LEDPIN5 = 5, LEDPIN6 = 6, LEDPIN7 = 8, LEDPIN8 = 13, LEDPIN9 = 16, LEDPIN10 = 17; //mapping for 11 data pins. Pins 9, 11, 12, 15 cannot be used. 
 
 #define LED_TYPE UCS1903
 #define COLOR_ORDER GRB //Yes! GRB!
