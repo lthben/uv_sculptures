@@ -283,148 +283,148 @@ void sixband_fade_animation()
     {
       leds9[i] = myIdleColor;
     }
+  }
 
-    if (bandms > band_delay)
+  if (bandms > band_delay)
+  {
+    if (!isMaxBrightness)
     {
-      if (!isMaxBrightness)
+      int brightlevel = get_brightness(brightness2);
+      myIdleColor.val = brightness2 = brightlevel;
+      for (int i = 0; i < n2; i++)
       {
-        int brightlevel = get_brightness(brightness2);
-        myIdleColor.val = brightness2 = brightlevel;
-        for (int i = 0; i < n2; i++)
-        {
-          leds1[i] = myIdleColor;
-        }
-      }
-      else
-      {
-        int brightlevel = get_brightness(brightness5);
-        myIdleColor.val = brightness5 = brightlevel;
-        for (int i = 0; i < n6; i++)
-        {
-          leds5[i] = myIdleColor;
-        }
-        for (int i = 0; i < n7; i++)
-        {
-          leds6[i] = myIdleColor;
-        }
+        leds1[i] = myIdleColor;
       }
     }
-
-    if (bandms > band_delay * 2)
+    else
     {
-      if (!isMaxBrightness)
+      int brightlevel = get_brightness(brightness5);
+      myIdleColor.val = brightness5 = brightlevel;
+      for (int i = 0; i < n6; i++)
       {
-        int brightlevel = get_brightness(brightness3);
-        myIdleColor.val = brightness3 = brightlevel;
-        for (int i = 0; i < n3; i++)
-        {
-          leds2[i] = myIdleColor;
-        }
+        leds5[i] = myIdleColor;
       }
-      else
+      for (int i = 0; i < n7; i++)
       {
-        int brightlevel = get_brightness(brightness4);
-        myIdleColor.val = brightness4 = brightlevel;
-        for (int i = 0; i < n4; i++)
-        {
-          leds3[i] = myIdleColor;
-        }
-        for (int i = 0; i < n5; i++)
-        {
-          leds4[i] = myIdleColor;
-        }
+        leds6[i] = myIdleColor;
       }
     }
+  }
 
-    if (bandms > band_delay * 3)
+  if (bandms > band_delay * 2)
+  {
+    if (!isMaxBrightness)
     {
-      if (!isMaxBrightness)
+      int brightlevel = get_brightness(brightness3);
+      myIdleColor.val = brightness3 = brightlevel;
+      for (int i = 0; i < n3; i++)
       {
-        int brightlevel = get_brightness(brightness4);
-        myIdleColor.val = brightness4 = brightlevel;
-        for (int i = 0; i < n4; i++)
-        {
-          leds3[i] = myIdleColor;
-        }
-        for (int i = 0; i < n5; i++)
-        {
-          leds4[i] = myIdleColor;
-        }
-      }
-      else
-      {
-        int brightlevel = get_brightness(brightness3);
-        myIdleColor.val = brightness3 = brightlevel;
-        for (int i = 0; i < n3; i++)
-        {
-          leds2[i] = myIdleColor;
-        }
+        leds2[i] = myIdleColor;
       }
     }
-
-    if (bandms > band_delay * 4)
+    else
     {
-      if (!isMaxBrightness)
+      int brightlevel = get_brightness(brightness4);
+      myIdleColor.val = brightness4 = brightlevel;
+      for (int i = 0; i < n4; i++)
       {
-        int brightlevel = get_brightness(brightness5);
-        myIdleColor.val = brightness5 = brightlevel;
-        for (int i = 0; i < n6; i++)
-        {
-          leds5[i] = myIdleColor;
-        }
-        for (int i = 0; i < n7; i++)
-        {
-          leds6[i] = myIdleColor;
-        }
+        leds3[i] = myIdleColor;
       }
-      else
+      for (int i = 0; i < n5; i++)
       {
-        int brightlevel = get_brightness(brightness2);
-        myIdleColor.val = brightness2 = brightlevel;
-        for (int i = 0; i < n2; i++)
-        {
-          leds1[i] = myIdleColor;
-        }
+        leds4[i] = myIdleColor;
       }
     }
+  }
 
-    if (bandms > band_delay * 5)
+  if (bandms > band_delay * 3)
+  {
+    if (!isMaxBrightness)
     {
-      if (!isMaxBrightness)
+      int brightlevel = get_brightness(brightness4);
+      myIdleColor.val = brightness4 = brightlevel;
+      for (int i = 0; i < n4; i++)
       {
-        int brightlevel = get_brightness(brightness6);
-        myIdleColor.val = brightness6 = brightlevel;
-        for (int i = 0; i < n8; i++)
-        {
-          leds7[i] = myIdleColor;
-        }
-        for (int i = 0; i < n9; i++)
-        {
-          leds8[i] = myIdleColor;
-        }
-        for (int i = 0; i < n10; i++)
-        {
-          leds9[i] = myIdleColor;
-        }
-        if (brightlevel == maxBrightLvl)
-        {
-          isMaxBrightness = true;
-          bandms = 0;
-        }
+        leds3[i] = myIdleColor;
       }
-      else
+      for (int i = 0; i < n5; i++)
       {
-        int brightlevel = get_brightness(brightness1);
-        myIdleColor.val = brightness1 = brightlevel;
-        for (int i = 0; i < n1; i++)
-        {
-          leds0[i] = myIdleColor;
-        }
-        if (brightlevel == 0)
-        {
-          isMaxBrightness = false;
-          bandms = 0;
-        }
+        leds4[i] = myIdleColor;
+      }
+    }
+    else
+    {
+      int brightlevel = get_brightness(brightness3);
+      myIdleColor.val = brightness3 = brightlevel;
+      for (int i = 0; i < n3; i++)
+      {
+        leds2[i] = myIdleColor;
+      }
+    }
+  }
+
+  if (bandms > band_delay * 4)
+  {
+    if (!isMaxBrightness)
+    {
+      int brightlevel = get_brightness(brightness5);
+      myIdleColor.val = brightness5 = brightlevel;
+      for (int i = 0; i < n6; i++)
+      {
+        leds5[i] = myIdleColor;
+      }
+      for (int i = 0; i < n7; i++)
+      {
+        leds6[i] = myIdleColor;
+      }
+    }
+    else
+    {
+      int brightlevel = get_brightness(brightness2);
+      myIdleColor.val = brightness2 = brightlevel;
+      for (int i = 0; i < n2; i++)
+      {
+        leds1[i] = myIdleColor;
+      }
+    }
+  }
+
+  if (bandms > band_delay * 5)
+  {
+    if (!isMaxBrightness)
+    {
+      int brightlevel = get_brightness(brightness6);
+      myIdleColor.val = brightness6 = brightlevel;
+      for (int i = 0; i < n8; i++)
+      {
+        leds7[i] = myIdleColor;
+      }
+      for (int i = 0; i < n9; i++)
+      {
+        leds8[i] = myIdleColor;
+      }
+      for (int i = 0; i < n10; i++)
+      {
+        leds9[i] = myIdleColor;
+      }
+      if (brightlevel == maxBrightLvl)
+      {
+        isMaxBrightness = true;
+        bandms = 0;
+      }
+    }
+    else
+    {
+      int brightlevel = get_brightness(brightness1);
+      myIdleColor.val = brightness1 = brightlevel;
+      for (int i = 0; i < n1; i++)
+      {
+        leds0[i] = myIdleColor;
+      }
+      if (brightlevel == 0)
+      {
+        isMaxBrightness = false;
+        bandms = 0;
       }
     }
   }
