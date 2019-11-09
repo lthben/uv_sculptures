@@ -34,8 +34,8 @@ const int LEDPIN0 = 0, LEDPIN1 = 1, LEDPIN2 = 2, LEDPIN3 = 3, LEDPIN4 = 4, LEDPI
 
 //-------------------- USER DEFINED SETTINGS --------------------//
 
-// #define __SCULPTURE1__ 
-#define __SCULPTURE2__ 
+#define __SCULPTURE1__ 
+// #define __SCULPTURE2__ 
 
 //band 1 is inner most centre where the idle fade animation starts from
 //number of pixels (every 10cm) for each data pin controlled led strip
@@ -73,8 +73,6 @@ AudioControlSGTL5000 sgtl5000_1; //xy=615,336
 #define SDCARD_MOSI_PIN 7
 #define SDCARD_SCK_PIN 14
 
-float vol = 0.7; //master volume gain 0.0 - 1.0
-
 //-------------------- Buttons and Sliders --------------------//
 
 const int buttonPin = 19;
@@ -97,6 +95,7 @@ const int SCULPTURE_ID = 1;
 const char *idleTrack = "DRONE1.WAV"; const char *activeTrack = "RAYGUN.WAV";
 CRGB leds0[p1_1_x], leds1[p1_2_x], leds2[p1_3_x], leds3[p1_4_1], leds4[p1_4_2], leds5[p1_5_1], leds6[p1_5_2], leds7[p1_6_1], leds8[p1_6_2], leds9[p1_6_3];
 const int n1 = p1_1_x, n2 = p1_2_x, n3 = p1_3_x, n4 = p1_4_1, n5 = p1_4_2, n6 = p1_5_1, n7 = p1_5_2, n8 = p1_6_1, n9 = p1_6_2, n10 = p1_6_3; //for common code for both sculptures
+float vol = 0.6; //hard to access the vol knob on the amp, so adjust in software
 
 #elif defined(__SCULPTURE2__)
 CHSV myIdleColor = cpink;
@@ -104,6 +103,7 @@ const int SCULPTURE_ID = 2;
 const char *idleTrack = "DRONE2.WAV"; const char *activeTrack = "TINKLING.WAV";
 CRGB leds0[p2_1_1], leds1[p2_1_2], leds2[p2_1_3], leds3[p2_2_x], leds4[p2_3_x], leds5[p2_4_x], leds6[p2_5_x], leds7[p2_6_x], leds8[p2_7_x], leds9[0]; //need to define "leds9[]" else cannot compile
 const int n1 = p2_1_1, n2 = p2_1_2, n3 = p2_1_3, n4 = p2_2_x, n5 = p2_3_x, n6 = p2_4_x, n7 = p2_5_x, n8 = p2_6_x, n9 = p2_7_x, n10 = 0; //for common code for both sculptures
+float vol = 0.7; //master volume gain 0.0 - 1.0
 
 #else
 #error "invalid sculpture ID"

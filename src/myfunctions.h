@@ -23,7 +23,11 @@ void read_console()
   {
     if (SCULPTURE_ID == 1)
     {
-      currSliderPosIndex = int(map(currSliderVal, 0, 1023, 0, NUMDATA1 - 1));
+      if (currSliderVal >= 180 && currSliderVal < 300) currSliderPosIndex = 0;
+      else if (currSliderVal >= 300 && currSliderVal < 520) currSliderPosIndex = 1;
+      else if (currSliderVal >= 520 && currSliderVal < 720) currSliderPosIndex = 2;
+      else if (currSliderVal >= 720 && currSliderVal < 920) currSliderPosIndex = 3;
+      else if (currSliderVal >= 920 && currSliderVal < 1024) currSliderPosIndex = 4;  
     }
     else //sculpture 2
     {
@@ -610,14 +614,14 @@ void register_readings()
   {
     for (int i = 0; i < NUMDATA1; i++)
     {
-      readings1[i] = int(map(ann_readings[i], 0.0, 8.0, 31.0, 255.0));
+      readings1[i] = int(map(ann_readings[i], 0.0, 8.0, 80.0, 255.0));
     }
   }
   else if (SCULPTURE_ID == 2)
   {
     for (int i = 0; i < NUMDATA2; i++)
     {
-      readings2[i] = int(map(sohsuang_readings[i], 0.0, 7.0, 31.0, 255.0));
+      readings2[i] = int(map(sohsuang_readings[i], 0.0, 7.0, 80.0, 255.0));
     }
   }
 }
