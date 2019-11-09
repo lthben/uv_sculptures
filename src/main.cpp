@@ -34,8 +34,8 @@ const int LEDPIN0 = 0, LEDPIN1 = 1, LEDPIN2 = 2, LEDPIN3 = 3, LEDPIN4 = 4, LEDPI
 
 //-------------------- USER DEFINED SETTINGS --------------------//
 
-#define __SCULPTURE1__ 
-// #define __SCULPTURE2__ 
+// #define __SCULPTURE1__ 
+#define __SCULPTURE2__ 
 
 //band 1 is inner most centre where the idle fade animation starts from
 //number of pixels (every 10cm) for each data pin controlled led strip
