@@ -5,16 +5,15 @@
 
 void read_console()
 {
-  myButton.update();
-
-  if (myButton.fallingEdge())
+  if (playMode != BUTTON_MODE) //don't interrupt the button mode with slider or another button press
   {
-    isButtonPressed = true;
-    Serial.println("button pressed");
-  }
+    myButton.update();
 
-  if (playMode != BUTTON_MODE) //don't interrupt the button mode with slider
-  {
+    if (myButton.fallingEdge())
+    {
+      isButtonPressed = true;
+      Serial.println("button pressed");
+    }
     currSliderVal = analogRead(sliderPin);
     // Serial.print("val: "); Serial.println(currSliderVal);
   }

@@ -34,8 +34,11 @@ const int LEDPIN0 = 0, LEDPIN1 = 1, LEDPIN2 = 2, LEDPIN3 = 3, LEDPIN4 = 4, LEDPI
 
 //-------------------- USER DEFINED SETTINGS --------------------//
 
-// #define __SCULPTURE1__ 
-#define __SCULPTURE2__ 
+/* CHECK IF CHECK_CONSOLE() IS COMMENTED OUT!!!!!!!!!
+*/
+
+// #define __SCULPTURE1__  //Ann
+#define __SCULPTURE2__  //Soh & Suang
 
 //band 1 is inner most centre where the idle fade animation starts from
 //number of pixels (every 10cm) for each data pin controlled led strip
@@ -193,7 +196,7 @@ void setup()
 
 void loop()
 {
-  read_console(); //listen to buttons and sliders
+  // read_console(); //listen to buttons and sliders
 
   check_playMode();
 
