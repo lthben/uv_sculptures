@@ -1,7 +1,7 @@
 /*
   Author: Benjamin Low (Lthben@gmail.com)
   Date: Nov 2019
-  Description: UV Sculpture 2 - Soh / Suang
+  Description: UV Sculpture 1 & 2 - Ann & Soh / Suang
 
       Teensy 3.2 with audio shield. 
       Each sculpture has one button and one slider each.
@@ -24,21 +24,23 @@
 #include <Bounce.h>
 
 //-------------------- PIN ASSIGNMENT --------------------//
-/* Mapping for 11 data pins. Pins 9, 11, 12, 15 cannot be used as sound will not play. 
-  TBD: can 13, 16, 17, 18, 21 to 23 be used? -> 13 cannot light up led
-  HACK: LEDPIN9 is coupled to LEDPIN8. Animation is slow enough not to notice that LEDPIN8  and LEDPIN9 are actually have the same brightness
+/* Mapping for 10 data pins. Pins 9, 11, 12, 15 cannot be used as sound will not play. 
+  TBD: can 13, 16, 17, 18, 21 to 23 be used? -> 13 (on Soh/Suang) cannot light up led
+  HACK: For Soh/Suang, LEDPIN8 is coupled to LEDPIN7. Animation is slow enough not to notice that LEDPIN8  and LEDPIN7 are actually have the same brightness
   7, 10 and 14 used by SD card
   19 and 20 used by pot and button
 */
-const int LEDPIN0 = 0, LEDPIN1 = 1, LEDPIN2 = 2, LEDPIN3 = 3, LEDPIN4 = 4, LEDPIN5 = 5, LEDPIN6 = 6, LEDPIN7 = 8, LEDPIN8 = 13, LEDPIN9 = 16, LEDPIN10 = 17; 
+const int LEDPIN0 = 0, LEDPIN1 = 1, LEDPIN2 = 2, LEDPIN3 = 3, LEDPIN4 = 4, LEDPIN5 = 5, LEDPIN6 = 6, LEDPIN7 = 8, LEDPIN8 = 13, LEDPIN9 = 16; //Soh/Suang uses 13 as LEDPIN8. LEDPIN9 was pin 16
+
+const int buttonPin = 19;
+const int sliderPin = A6;//A6 is 20. A8 or 22 does not work for some strange reason. Causes sound to not be heard even when playing.
 
 //-------------------- USER DEFINED SETTINGS --------------------//
 
-/* CHECK IF CHECK_CONSOLE() IS COMMENTED OUT!!!!!!!!!
-*/
+/* CHECK IF CHECK_CONSOLE() IS COMMENTED OUT!!!!!!!!!*/
 
-// #define __SCULPTURE1__  //Ann
-#define __SCULPTURE2__  //Soh & Suang
+#define __SCULPTURE1__  //Ann
+// #define __SCULPTURE2__  //Soh & Suang
 
 const int MAXBRIGHTLVL = 160; //conserve the leds
 
@@ -80,12 +82,10 @@ AudioControlSGTL5000 sgtl5000_1; //xy=615,336
 
 //-------------------- Buttons and Sliders --------------------//
 
-const int buttonPin = 19;
-const int sliderPin = A6;//A6 is 20. A8 or 22 does not work for some strange reason. Causes sound to not be heard even when playing.
 Bounce myButton = Bounce(buttonPin, 15); // 15 = 15 ms debounce time
 
 unsigned int sliderVal, prevSliderVal, currSliderVal;
-unsigned int sliderPosIndex, prevSliderPosIndex, currSliderPosIndex; //0 - 4 for Ann, 0 - 7 for Soh & Suang
+unsigned int sliderPosIndex, prevSliderPosIndex, currSliderPosIndex = 99; //0 - 4 for Ann, 0 - 7 for Soh & Suang
 
 bool isButtonPressed, isSliderToggled;
 

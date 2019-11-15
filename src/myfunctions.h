@@ -14,19 +14,22 @@ void read_console()
       isButtonPressed = true;
       Serial.println("button pressed");
     }
+
+    //read pot
     currSliderVal = analogRead(sliderPin);
-    // Serial.print("val: "); Serial.println(currSliderVal);
+    Serial.print("val: "); Serial.println(currSliderVal);
   }
 
   if (abs(currSliderVal - prevSliderVal) > 30) //to ignore noise
   {
     if (SCULPTURE_ID == 1)
     {
-      if (currSliderVal >= 180 && currSliderVal < 300) currSliderPosIndex = 0;
-      else if (currSliderVal >= 300 && currSliderVal < 520) currSliderPosIndex = 1;
-      else if (currSliderVal >= 520 && currSliderVal < 720) currSliderPosIndex = 2;
-      else if (currSliderVal >= 720 && currSliderVal < 920) currSliderPosIndex = 3;
-      else if (currSliderVal >= 920 && currSliderVal < 1024) currSliderPosIndex = 4;  
+      if (currSliderVal >= 85 && currSliderVal < 305) currSliderPosIndex = 0;
+      else if (currSliderVal >= 305 && currSliderVal < 515) currSliderPosIndex = 1;
+      else if (currSliderVal >= 515 && currSliderVal < 710) currSliderPosIndex = 2;
+      else if (currSliderVal >= 710 && currSliderVal < 840) currSliderPosIndex = 3;
+      else if (currSliderVal >= 840 && currSliderVal < 1024) currSliderPosIndex = 4; 
+      else currSliderPosIndex = 99;
     }
     else //sculpture 2
     {
@@ -613,14 +616,14 @@ void register_readings()
   {
     for (int i = 0; i < NUMDATA1; i++)
     {
-      readings1[i] = int(map(ann_readings[i], 0.0, 8.0, 80.0, 255.0));
+      readings1[i] = int(map(ann_readings[i], 0.0, 8.0, 100.0, 255.0));
     }
   }
   else if (SCULPTURE_ID == 2)
   {
     for (int i = 0; i < NUMDATA2; i++)
     {
-      readings2[i] = int(map(sohsuang_readings[i], 0.0, 7.0, 80.0, 255.0));
+      readings2[i] = int(map(sohsuang_readings[i], 0.0, 7.0, 100.0, 255.0));
     }
   }
 }
