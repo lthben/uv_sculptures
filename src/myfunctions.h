@@ -18,7 +18,7 @@ void read_console()
     // Serial.print("val: "); Serial.println(currSliderVal);
   }
 
-  if (abs(currSliderVal - prevSliderVal) > 50) //to ignore noise
+  if (abs(currSliderVal - prevSliderVal) > 30) //to ignore noise
   {
     if (SCULPTURE_ID == 1)
     {
@@ -30,7 +30,7 @@ void read_console()
     }
     else //sculpture 2
     {
-      currSliderPosIndex = int(map(currSliderVal, 0, 1023, 0, NUMDATA2 - 1));
+      currSliderPosIndex = int(map(currSliderVal, 50, 995, 0, NUMDATA2 - 1));
     }
 
     if (currSliderPosIndex != prevSliderPosIndex)
@@ -634,7 +634,7 @@ void go_idle()
   playMode = IDLE_MODE;
   hasplayModeChanged = true; //trigger sound change
   band_delay = BAND_DELAY;
-  maxBrightLvl = 255;
+  maxBrightLvl = MAXBRIGHTLVL;
   Serial.println("IDLE MODE");
   isMaxBrightness = false;
   brightness1 = brightness2 = brightness3 = brightness4 = brightness5 = brightness6 = brightness7 = 0;

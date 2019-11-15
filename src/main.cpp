@@ -1,7 +1,7 @@
 /*
   Author: Benjamin Low (Lthben@gmail.com)
-  Date: Oct 2019
-  Description: UV Sculptures 1 and 2 - Ann and Soh / Suang Suang
+  Date: Nov 2019
+  Description: UV Sculpture 2 - Soh / Suang
 
       Teensy 3.2 with audio shield. 
       Each sculpture has one button and one slider each.
@@ -39,6 +39,8 @@ const int LEDPIN0 = 0, LEDPIN1 = 1, LEDPIN2 = 2, LEDPIN3 = 3, LEDPIN4 = 4, LEDPI
 
 // #define __SCULPTURE1__  //Ann
 #define __SCULPTURE2__  //Soh & Suang
+
+const int MAXBRIGHTLVL = 160; //conserve the leds
 
 //band 1 is inner most centre where the idle fade animation starts from
 //number of pixels (every 10cm) for each data pin controlled led strip
@@ -115,7 +117,7 @@ float vol = 0.7; //master volume gain 0.0 - 1.0
 #define UPDATES_PER_SECOND 100 //speed of light animation
 
 int brightness1, brightness2, brightness3, brightness4, brightness5, brightness6, brightness7; //band 1 to 7 brightness
-int maxBrightLvl = 255;                                                           //variable max brightness
+int maxBrightLvl = MAXBRIGHTLVL;                                                           //variable max brightness
 const int IDLE_MODE = 1, BUTTON_MODE = 2, SLIDER_MODE = 3;
 unsigned int playMode = IDLE_MODE; 
 bool hasplayModeChanged; //for audio track changes
@@ -196,7 +198,7 @@ void setup()
 
 void loop()
 {
-  // read_console(); //listen to buttons and sliders
+  read_console(); //listen to buttons and sliders
 
   check_playMode();
 
