@@ -108,7 +108,7 @@ const int SCULPTURE_ID = 2;
 const char *idleTrack = "DRONE2.WAV"; const char *activeTrack = "TINKLING.WAV";
 CRGB leds0[p2_1_1], leds1[p2_1_2], leds2[p2_1_3], leds3[p2_2_x], leds4[p2_3_x], leds5[p2_4_x], leds6[p2_5_x], leds7[p2_6_x], leds8[p2_7_x], leds9[0]; //need to define "leds9[]" else cannot compile
 const int n1 = p2_1_1, n2 = p2_1_2, n3 = p2_1_3, n4 = p2_2_x, n5 = p2_3_x, n6 = p2_4_x, n7 = p2_5_x, n8 = p2_6_x, n9 = p2_7_x, n10 = 0; //for common code for both sculptures
-float vol = 0.3; //master volume gain 0.0 - 1.0
+float vol = 0.5; //master volume gain 0.0 - 1.0
 
 #else
 #error "invalid sculpture ID"

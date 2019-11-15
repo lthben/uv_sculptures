@@ -34,8 +34,6 @@ void read_console()
         currSliderPosIndex = 3;
       else if (currSliderVal >= 840 && currSliderVal < 1024)
         currSliderPosIndex = 4;
-      else
-        currSliderPosIndex = 99;
     }
     else //sculpture 2
     {
@@ -671,14 +669,14 @@ void register_readings()
   {
     for (int i = 0; i < NUMDATA1; i++)
     {
-      readings1[i] = int(map(ann_readings[i], 0.0, 8.0, 100.0, 255.0));
+      readings1[i] = int(map(ann_readings[i], 0.0, 8.0, 100.0, 220.0)); //min bright of 100 so at least visible, reduce max bright to 225 cos power and data transmission issues with teensy
     }
   }
   else if (SCULPTURE_ID == 2)
   {
     for (int i = 0; i < NUMDATA2; i++)
     {
-      readings2[i] = int(map(sohsuang_readings[i], 0.0, 7.0, 100.0, 255.0));
+      readings2[i] = int(map(sohsuang_readings[i], 0.0, 7.0, 100.0, 220.0));
     }
   }
 }
@@ -697,7 +695,8 @@ void go_idle()
   isMaxBrightness = false;
   brightness1 = brightness2 = brightness3 = brightness4 = brightness5 = brightness6 = brightness7 = 0;
   bandms = 0;
-  sgtl5000_1.volume(0.3);
+  if (SCULPTURE_ID == 2) sgtl5000_1.volume(0.5);
+  else sgtl5000_1.volume(0.3);
 }
 
 /*--------------------------------------------------------------------------------
