@@ -24,7 +24,9 @@ void read_console()
   {
     if (SCULPTURE_ID == 1)
     {
-      if (currSliderVal >= 85 && currSliderVal < 305)
+      if (currSliderVal < 85)
+        currSliderPosIndex = 99; //"dead" zone for slider 
+      else if (currSliderVal >= 85 && currSliderVal < 305)
         currSliderPosIndex = 0;
       else if (currSliderVal >= 305 && currSliderVal < 515)
         currSliderPosIndex = 1;
@@ -47,7 +49,8 @@ void read_console()
 
       if (SCULPTURE_ID == 1)
       {
-        maxBrightLvl = readings1[sliderPosIndex];
+        if (sliderPosIndex != 99) maxBrightLvl = readings1[sliderPosIndex];
+        else maxBrightLvl = 0; //sliderPosIndex is 99
       }
       else //sculpture 2
       {
@@ -183,79 +186,135 @@ void set_all_to_brightLevel(int brightLvl)
     {
       leds2[i] = activeColor1;
     }
-    for (int i = 0; i < n4; i++)
+
+    if (SCULPTURE_ID == 1 && ((playMode == SLIDER_MODE && currSliderPosIndex == 1) || (playMode == BUTTON_MODE && readingsCounter == 1)))
     {
-      if (SCULPTURE_ID == 1 && ((playMode == SLIDER_MODE && currSliderPosIndex == 1) || (playMode == BUTTON_MODE && readingsCounter == 1)))
+      for (int i = 0; i < n4; i++)
       {
         leds3[i] = CRGB::Black;
       }
-      else
+    }
+    else
+    {
+      for (int i = 0; i < n4; i++)
       {
         leds3[i] = activeColor2;
       }
     }
-    for (int i = 0; i < n5; i++)
+
+    if (SCULPTURE_ID == 1 && ((playMode == SLIDER_MODE && currSliderPosIndex == 1) || (playMode == BUTTON_MODE && readingsCounter == 1)))
     {
-      if (SCULPTURE_ID == 1 && ((playMode == SLIDER_MODE && currSliderPosIndex == 1) || (playMode == BUTTON_MODE && readingsCounter == 1)))
+      for (int i = 0; i < n5; i++)
       {
         leds4[i] = CRGB::Black;
       }
-      else
+    }
+    else
+    {
+      for (int i = 0; i < n5; i++)
       {
         leds4[i] = activeColor2;
       }
     }
-    for (int i = 0; i < n6; i++)
+
+    if (SCULPTURE_ID == 1 && ((playMode == SLIDER_MODE && currSliderPosIndex == 1) || (playMode == BUTTON_MODE && readingsCounter == 1)))
     {
-      if (SCULPTURE_ID == 1 && ((playMode == SLIDER_MODE && currSliderPosIndex == 1) || (playMode == BUTTON_MODE && readingsCounter == 1)))
+      for (int i = 0; i < n6; i++)
       {
         leds5[i] = CRGB::Black;
       }
-      else
+    }
+    else if (SCULPTURE_ID == 2 && ((playMode == SLIDER_MODE && (currSliderPosIndex == 1 || currSliderPosIndex == 7)) || (playMode == BUTTON_MODE && (readingsCounter == 1 || readingsCounter == 7))))
+    {
+      for (int i = 0; i < n6; i++)
+      {
+        leds5[i] = CRGB::Black;
+      }
+    }
+    else
+    {
+      for (int i = 0; i < n6; i++)
       {
         leds5[i] = activeColor2;
       }
     }
-    for (int i = 0; i < n7; i++)
+
+    if (SCULPTURE_ID == 1 && ((playMode == SLIDER_MODE && currSliderPosIndex == 1) || (playMode == BUTTON_MODE && readingsCounter == 1)))
     {
-      if (SCULPTURE_ID == 1 && ((playMode == SLIDER_MODE && currSliderPosIndex == 1) || (playMode == BUTTON_MODE && readingsCounter == 1)))
+      for (int i = 0; i < n7; i++)
       {
         leds6[i] = CRGB::Black;
       }
-      else
+    }
+    else if (SCULPTURE_ID == 2 && ((playMode == SLIDER_MODE && (currSliderPosIndex == 1 || currSliderPosIndex == 7)) || (playMode == BUTTON_MODE && (readingsCounter == 1 || readingsCounter == 7))))
+    {
+      for (int i = 0; i < n7; i++)
+      {
+        leds6[i] = CRGB::Black;
+      }
+    }
+    else
+    {
+      for (int i = 0; i < n7; i++)
       {
         leds6[i] = activeColor2;
       }
     }
-    for (int i = 0; i < n8; i++)
+
+    if (SCULPTURE_ID == 1 && ((playMode == SLIDER_MODE && (currSliderPosIndex == 1 || currSliderPosIndex == 2)) || (playMode == BUTTON_MODE && (readingsCounter == 1 || readingsCounter == 2))))
     {
-      if (SCULPTURE_ID == 1 && ((playMode == SLIDER_MODE && (currSliderPosIndex == 1 || currSliderPosIndex == 2)) || (playMode == BUTTON_MODE && (readingsCounter == 1 || readingsCounter == 2))))
+      for (int i = 0; i < n8; i++)
       {
         leds7[i] = CRGB::Black;
       }
-      else
+    }
+    else if (SCULPTURE_ID == 2 && ((playMode == SLIDER_MODE && (currSliderPosIndex == 1 || currSliderPosIndex == 7)) || (playMode == BUTTON_MODE && (readingsCounter == 1 || readingsCounter == 7))))
+    {
+      for (int i = 0; i < n8; i++)
+      {
+        leds7[i] = CRGB::Black;
+      }
+    }
+    else
+    {
+      for (int i = 0; i < n8; i++)
       {
         leds7[i] = activeColor3;
       }
     }
-    for (int i = 0; i < n9; i++)
+
+    if (SCULPTURE_ID == 1 && ((playMode == SLIDER_MODE && (currSliderPosIndex == 1 || currSliderPosIndex == 2)) || (playMode == BUTTON_MODE && (readingsCounter == 1 || readingsCounter == 2))))
     {
-      if (SCULPTURE_ID == 1 && ((playMode == SLIDER_MODE && (currSliderPosIndex == 1 || currSliderPosIndex == 2)) || (playMode == BUTTON_MODE && (readingsCounter == 1 || readingsCounter == 2))))
+      for (int i = 0; i < n9; i++)
       {
         leds8[i] = CRGB::Black;
       }
-      else
+    }
+    else if (SCULPTURE_ID == 2 && ((playMode == SLIDER_MODE && (currSliderPosIndex == 1 || currSliderPosIndex == 7)) || (playMode == BUTTON_MODE && (readingsCounter == 1 || readingsCounter == 7))))
+    {
+      for (int i = 0; i < n9; i++)
+      {
+        leds8[i] = CRGB::Black;
+      }
+    }
+    else
+    {
+      for (int i = 0; i < n9; i++)
       {
         leds8[i] = activeColor3;
       }
     }
-    for (int i = 0; i < n10; i++)
+
+    if (SCULPTURE_ID == 1 && ((playMode == SLIDER_MODE && (currSliderPosIndex == 1 || currSliderPosIndex == 2)) || (playMode == BUTTON_MODE && (readingsCounter == 1 || readingsCounter == 2))))
     {
-      if (SCULPTURE_ID == 1 && ((playMode == SLIDER_MODE && (currSliderPosIndex == 1 || currSliderPosIndex == 2)) || (playMode == BUTTON_MODE && (readingsCounter == 1 || readingsCounter == 2))))
+      for (int i = 0; i < n10; i++)
       {
         leds9[i] = CRGB::Black;
       }
-      else
+    }
+    else
+    {
+      for (int i = 0; i < n10; i++)
       {
         leds9[i] = activeColor3;
       }
@@ -695,8 +754,10 @@ void go_idle()
   isMaxBrightness = false;
   brightness1 = brightness2 = brightness3 = brightness4 = brightness5 = brightness6 = brightness7 = 0;
   bandms = 0;
-  if (SCULPTURE_ID == 2) sgtl5000_1.volume(0.5);
-  else sgtl5000_1.volume(0.3);
+  if (SCULPTURE_ID == 2)
+    sgtl5000_1.volume(0.5);
+  else
+    sgtl5000_1.volume(0.3);
 }
 
 /*--------------------------------------------------------------------------------
@@ -750,7 +811,14 @@ void playback_readings() //light sequence playback according to readings[] array
       }
 
       //change vol here
-      vol = map(float(activeColor1.val), 0.0, 255.0, 0.3, 0.7);
+      if (SCULPTURE_ID == 1)
+      {
+        vol = map(float(activeColor1.val), 0.0, 255.0, 0.3, 0.7);
+      }
+      else
+      { //sculpture 2
+        vol = map(float(activeColor1.val), 0.0, 255.0, 0.5, 0.9);
+      }
       sgtl5000_1.volume(vol);
       // Serial.print("vol: "); Serial.println(vol);
 
@@ -796,7 +864,14 @@ void toggle_readings()
     set_all_to_brightLevel(maxBrightLvl);
 
     //change vol here
-    vol = map(float(activeColor1.val), 0.0, 255.0, 0.3, 0.7);
+    if (SCULPTURE_ID == 1)
+    {
+      vol = map(float(activeColor1.val), 0.0, 255.0, 0.3, 0.7);
+    }
+    else
+    { //sculpture 2
+      vol = map(float(activeColor1.val), 0.0, 255.0, 0.5, 0.9);
+    }
     sgtl5000_1.volume(vol);
     // Serial.print("vol: "); Serial.println(vol);
 
