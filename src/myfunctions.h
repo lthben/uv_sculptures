@@ -14,13 +14,13 @@ void read_console()
       isButtonPressed = true;
       Serial.println("button pressed");
     }
-
+  }
     //read pot
     currSliderVal = analogRead(sliderPin);
     // Serial.print("val: "); Serial.println(currSliderVal);
-  }
+  //} //bracket here previously so slider cannot interrupt button mode
 
-  if (abs(currSliderVal - prevSliderVal) > 30) //to ignore noise
+  if (abs(currSliderVal - prevSliderVal) > 30 && isSliderToggled == false) //to ignore noise
   {
     if (SCULPTURE_ID == 1)
     {
@@ -50,7 +50,7 @@ void read_console()
       if (SCULPTURE_ID == 1)
       {
         if (sliderPosIndex != 99) maxBrightLvl = readings1[sliderPosIndex];
-        else maxBrightLvl = 0; //sliderPosIndex is 99
+        else maxBrightLvl = 0; //sliderPosIndex is 99 for dead zone on slider
       }
       else //sculpture 2
       {
@@ -906,13 +906,14 @@ void play_audio()
     {
       playSdWav1.stop();
       playSdWav1.play(idleTrack);
-      delay(10);
+      delay(10); //give it a bit of time to read the wav file
       Serial.print("Start playing ");
       Serial.println(idleTrack);
       hasplayModeChanged = false;
     }
     else if (playSdWav1.isPlaying() == false)
     {
+      playSdWav1.stop();
       playSdWav1.play(idleTrack);
       delay(10);
       Serial.print("Start playing ");
@@ -932,6 +933,7 @@ void play_audio()
     }
     else if (playSdWav1.isPlaying() == false)
     {
+      playSdWav1.stop();
       playSdWav1.play(activeTrack);
       delay(10);
       Serial.print("Start playing ");

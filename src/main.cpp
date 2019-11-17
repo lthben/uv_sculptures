@@ -14,7 +14,7 @@
       SCULPTURE 1 uses a slider. 2 uses a knob  
 */
 
-#include <Arduino.h>
+#include <Arduino.h> 
 #include <FastLED.h>
 #include <Audio.h>
 #include <Wire.h>
