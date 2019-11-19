@@ -24,15 +24,21 @@
 #include <Bounce.h>
 
 //-------------------- PIN ASSIGNMENT --------------------//
-/* Mapping for 10 data pins. Pins 9, 11, 12, 15 cannot be used as sound will not play. 
-  TBD: can 13, 16, 17, 18, 21 to 23 be used? -> 13 (on Soh/Suang) cannot light up led
-  HACK: For Soh/Suang, LEDPIN8 is coupled to LEDPIN7. Animation is slow enough not to notice that LEDPIN8  and LEDPIN7 are actually have the same brightness
-  7, 10 and 14 used by SD card
-  19 and 20 used by pot and button
-*/
-const int LEDPIN0 = 0, LEDPIN1 = 1, LEDPIN2 = 2, LEDPIN3 = 3, LEDPIN4 = 4, LEDPIN5 = 5, LEDPIN6 = 6, LEDPIN7 = 8, LEDPIN8 = 13, LEDPIN9 = 16; //Soh/Suang uses 13 as LEDPIN8. LEDPIN9 was pin 16
+/*
+  9, 11, 13, 22, 23 used by audio data
+  18 and 19 used by audio control 
+  15 used by volume pot
+  7, 10, 12 and 14 used by SD card 
 
-const int buttonPin = 19;
+  19 (-> 21) and 20 used by button and pot respectively
+  11 and 13 used as SPI hardware data and clock respectively for WS2812 chipset -> can be shared
+
+  SCULPTURE 1: const int LEDPIN0 = 0, LEDPIN1 = 1, LEDPIN2 = 2, LEDPIN3 = 3, LEDPIN4 = 4, LEDPIN5 = 5, LEDPIN6 = 6, LEDPIN7 = 8, LEDPIN8 = 13 (-> 16), LEDPIN9 = 16 (-> 17); 
+
+  SCULPTURE 2: const int LEDPIN0 = 0, LEDPIN1 = 1, LEDPIN2 = 2, LEDPIN3 = 3, LEDPIN4 = 4, LEDPIN5 = 5, LEDPIN6 = 6, LEDPIN7 = 8, LEDPIN8 =  17 (-> 16), LEDPIN9 = 23 (-> 17);
+*/
+
+const int buttonPin = 21;
 const int sliderPin = A6;//A6 is 20. A8 or 22 does not work for some strange reason. Causes sound to not be heard even when playing.
 
 //-------------------- USER DEFINED SETTINGS --------------------//
@@ -44,7 +50,7 @@ const int sliderPin = A6;//A6 is 20. A8 or 22 does not work for some strange rea
 
 const int MAXBRIGHTLVL = 160; //conserve the leds
 
-//band 1 is inner most centre where the idle fade animation starts from
+//band 1 is inner most centre where the idle fade animation starts from 
 //number of pixels (every 10cm) for each data pin controlled led strip
 //number system is NX_BX_SX where NX is SCULPTURE ID number, BX is band number and SX is the individual strip number within the band
 const int p1_1_x = 3, p1_2_x = 6, p1_3_x = 10, p1_4_1 = 14, p1_4_2 = 14, p1_5_1 = 18, p1_5_2 = 18, p1_6_1 = 22, p1_6_2 = 22, p1_6_3 = 23; //SCULPTURE1. 6 bands. 10 strips.
@@ -101,6 +107,7 @@ const char *idleTrack = "DRONE1.WAV"; const char *activeTrack = "RAYGUN.WAV";
 CRGB leds0[p1_1_x], leds1[p1_2_x], leds2[p1_3_x], leds3[p1_4_1], leds4[p1_4_2], leds5[p1_5_1], leds6[p1_5_2], leds7[p1_6_1], leds8[p1_6_2], leds9[p1_6_3];
 const int n1 = p1_1_x, n2 = p1_2_x, n3 = p1_3_x, n4 = p1_4_1, n5 = p1_4_2, n6 = p1_5_1, n7 = p1_5_2, n8 = p1_6_1, n9 = p1_6_2, n10 = p1_6_3; //for common code for both sculptures
 float vol = 0.3; //hard to access the vol knob on the amp, so adjust in software
+const int LEDPIN0 = 0, LEDPIN1 = 1, LEDPIN2 = 2, LEDPIN3 = 3, LEDPIN4 = 4, LEDPIN5 = 5, LEDPIN6 = 6, LEDPIN7 = 8, LEDPIN8 = 16, LEDPIN9 = 17; 
 
 #elif defined(__SCULPTURE2__)
 CHSV myIdleColor = cpink;
@@ -109,6 +116,7 @@ const char *idleTrack = "DRONE2.WAV"; const char *activeTrack = "TINKLING.WAV";
 CRGB leds0[p2_1_1], leds1[p2_1_2], leds2[p2_1_3], leds3[p2_2_x], leds4[p2_3_x], leds5[p2_4_x], leds6[p2_5_x], leds7[p2_6_x], leds8[p2_7_x], leds9[0]; //need to define "leds9[]" else cannot compile
 const int n1 = p2_1_1, n2 = p2_1_2, n3 = p2_1_3, n4 = p2_2_x, n5 = p2_3_x, n6 = p2_4_x, n7 = p2_5_x, n8 = p2_6_x, n9 = p2_7_x, n10 = 0; //for common code for both sculptures
 float vol = 0.5; //master volume gain 0.0 - 1.0
+const int LEDPIN0 = 0, LEDPIN1 = 1, LEDPIN2 = 2, LEDPIN3 = 3, LEDPIN4 = 4, LEDPIN5 = 5, LEDPIN6 = 6, LEDPIN7 = 8, LEDPIN8 =  16, LEDPIN9 = 17;
 
 #else
 #error "invalid sculpture ID"
@@ -184,7 +192,7 @@ void setup()
     FastLED.addLeds<LED_TYPE, LEDPIN6, COLOR_ORDER>(leds6, p2_5_x);
     FastLED.addLeds<LED_TYPE, LEDPIN7, COLOR_ORDER>(leds7, p2_6_x);
     FastLED.addLeds<LED_TYPE, LEDPIN8, COLOR_ORDER>(leds8, p2_7_x);
-    FastLED.addLeds<LED_TYPE, LEDPIN8, COLOR_ORDER>(leds9, 0); //need to define, else cannot compile
+    FastLED.addLeds<LED_TYPE, LEDPIN9, COLOR_ORDER>(leds9, 0); //need to define, else cannot compile
   }
 
   FastLED.setBrightness(255);
